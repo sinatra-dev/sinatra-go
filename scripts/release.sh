@@ -237,18 +237,19 @@ step_pack() {
 }
 
 step_gate() {
-  local what
+  local what jobs="The verify and tag jobs run"
   if [ -s "$STATE/version" ]; then
     what="release v$(state version)"
   else
     what="create the missing GitHub release for $(state missing-tag)"
+    jobs="The tag job runs" # verify only runs when there's a release commit
   fi
   if [ "${DRY_RUN:-false}" = "true" ]; then
     notice "Dry run: verify still runs, the tag job is skipped. A real run would $what."
   elif [ "${PUBLISH_ENABLED:-}" != "true" ]; then
     notice "PUBLISH_ENABLED isn't 'true' (or this isn't $BRANCH): verify still runs, the tag job is skipped. A real run would $what. See RELEASING.md."
   else
-    echo "The verify and tag jobs run next, to $what."
+    echo "$jobs next, to $what."
   fi
 }
 
