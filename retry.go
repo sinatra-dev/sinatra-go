@@ -77,10 +77,11 @@ func (c *Client) do(ctx context.Context, policy retryOn, out any, build func(ser
 
 // attempt sends req once, within the client's timeout, and reads the whole
 // response.
-func (c *Client) attempt(ctx context.Context, req *http.Request) (int, http.Header, []byte, error) {
+func (c *Client) attempt(parent context.Context, req *http.Request) (int, http.Header, []byte, error) {
+	ctx := parent
 	if c.timeout > 0 {
 		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, c.timeout)
+		ctx, cancel = context.WithTimeout(parent, c.timeout)
 		defer cancel()
 	}
 	req = req.WithContext(ctx)
@@ -91,20 +92,22 @@ func (c *Client) attempt(ctx context.Context, req *http.Request) (int, http.Head
 
 	resp, err := c.http.Do(req)
 	if err != nil {
-		return 0, nil, nil, c.attemptError(ctx, err)
+		return 0, nil, nil, c.attemptError(parent, ctx, err)
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return 0, nil, nil, c.attemptError(ctx, err)
+		return 0, nil, nil, c.attemptError(parent, ctx, err)
 	}
 	return resp.StatusCode, resp.Header, body, nil
 }
 
 // attemptError says when an attempt failed because the client's timeout
-// passed, rather than the caller's context. Both wrap context.DeadlineExceeded.
-func (c *Client) attemptError(ctx context.Context, err error) error {
-	if c.timeout > 0 && errors.Is(ctx.Err(), context.DeadlineExceeded) {
+// passed. When the caller's own context ended (its deadline, or a cancel),
+// the error is returned as net/http reports it. Both kinds of deadline wrap
+// context.DeadlineExceeded.
+func (c *Client) attemptError(parent, ctx context.Context, err error) error {
+	if parent.Err() == nil && errors.Is(ctx.Err(), context.DeadlineExceeded) {
 		return fmt.Errorf("sinatra: no response within the client's %s timeout: %w", c.timeout, err)
 	}
 	return err

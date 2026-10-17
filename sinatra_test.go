@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"regexp"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 )
@@ -230,6 +231,33 @@ func TestAHungRequestTimesOut(t *testing.T) {
 	}
 	if n := len(s.requests()); n != 1 {
 		t.Errorf("requests = %d, want 1: a timeout isn't retried", n)
+	}
+}
+
+func TestACallersDeadlineIsReportedAsTheCallers(t *testing.T) {
+	s := newStub(t, reply{hang: true})
+	c, _ := newTestClient(t, s, WithTimeout(time.Minute))
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	_, err := c.Tasks.Get(ctx, ws, "task_1")
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("err = %v, want one that wraps context.DeadlineExceeded", err)
+	}
+	if strings.Contains(err.Error(), "client's") {
+		t.Errorf("err = %q: the caller's deadline passed, not the client's 1m timeout", err)
+	}
+}
+
+func TestTheClientTimeoutIsReportedAsTheClients(t *testing.T) {
+	s := newStub(t, reply{hang: true})
+	c, _ := newTestClient(t, s, WithTimeout(100*time.Millisecond))
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	_, err := c.Tasks.Get(ctx, ws, "task_1")
+	if !errors.Is(err, context.DeadlineExceeded) || !strings.Contains(err.Error(), "client's 100ms timeout") {
+		t.Errorf("err = %v, want the client's 100ms timeout, wrapping context.DeadlineExceeded", err)
 	}
 }
 
