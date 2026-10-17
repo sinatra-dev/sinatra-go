@@ -36,7 +36,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-MODULE=github.com/sinatra-dev/sinatra-go
+# The module path, from go.mod (sed, not go: the tag job installs nothing).
+MODULE=$(sed -n 's/^module[[:space:]]*//p' go.mod)
+[ -n "$MODULE" ] || { echo "release: no module path in go.mod" >&2; exit 1; }
 SPEC_URL=${SPEC_URL:-https://api.sinatra.dev/openapi.json}
 BRANCH=${RELEASE_BRANCH:-main}
 GOPROXY_URL=${GOPROXY_URL:-https://proxy.golang.org}
@@ -175,6 +177,14 @@ step_version() {
   local tag version
   tag=$(state last-tag)
   version=$(bash scripts/next-version.sh "$STATE/old.json" openapi.json "$tag")
+  # Go needs v2 and up under their own module path (.../v2). Tagging v2.0.0
+  # on this path would push a tag the go command rejects, so stop first.
+  local major=${version%%.*} want root=$MODULE
+  [[ "$root" =~ /v[0-9]+$ ]] && root=${root%/v*}
+  want=$root
+  [ "$major" -lt 2 ] || want=$root/v$major
+  [ "$MODULE" = "$want" ] ||
+    die "the next version is v$version, but the module path is $MODULE: v$version needs $want. See RELEASING.md, 'Major versions'."
   echo "$version" >"$STATE/version"
   VERSION_TAG="v$version" write_notes "$tag" HEAD "$STATE/old.json" openapi.json "$STATE/notes.md"
 

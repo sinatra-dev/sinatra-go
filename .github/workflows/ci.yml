@@ -66,3 +66,5 @@ jobs:
         run: bash scripts/contract.sh
       - name: next-version.sh tests
         run: bash scripts/next-version.test.sh
+      - name: README quick start builds
+        run: bash scripts/check-readme.sh
