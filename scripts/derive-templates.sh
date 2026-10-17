@@ -32,6 +32,7 @@ header() {
 # client.tmpl: from the request builders' marker up to applyEditors, with the
 # builders unexported.
 start='{{/* Generate request builders */}}'
+# shellcheck disable=SC2016 # template text, not shell
 stop='func (c *{{ $clientTypeName }}) applyEditors'
 [ "$(grep -cF "$start" "$src/client.tmpl")" = 1 ] && [ "$(grep -cF "$stop" "$src/client.tmpl")" = 1 ] ||
   { echo "derive-templates: client.tmpl changed shape (markers not found once each)" >&2; exit 1; }
@@ -43,6 +44,7 @@ stop='func (c *{{ $clientTypeName }}) applyEditors'
     on { gsub(/New\{\{\$opid\}\}Request/, "new{{$opid}}Request"); print }
   ' "$src/client.tmpl"
 } >codegen/client.tmpl
+# shellcheck disable=SC2016 # template text, not shell
 if grep -qF -e 'New{{$opid}}' -e NewClient -e ClientOption codegen/client.tmpl; then
   echo "derive-templates: codegen/client.tmpl still exports a constructor" >&2
   exit 1

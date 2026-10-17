@@ -1,0 +1,68 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # The oldest Go the module supports (go.mod's go directive) and the latest.
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        go: ["1.24", stable]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ matrix.go }}
+      - run: go version
+      - run: go build ./...
+      - run: go vet ./...
+      - name: Unit tests
+        run: go test -race -count=1 ./...
+
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+      # Prism, for the contract tests, needs Node 24.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: oasdiff
+        run: |
+          bash scripts/install-oasdiff.sh
+          echo "$PWD/.tools/bin" >>"$GITHUB_PATH"
+
+      - name: Generated code matches openapi.json
+        run: bash scripts/check-generated.sh
+      - name: gofmt
+        run: test -z "$(gofmt -l .)" || { gofmt -l . >&2; exit 1; }
+      - name: staticcheck
+        run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
+      - name: govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+      - name: Contract tests (Prism)
+        run: bash scripts/contract.sh
+      - name: next-version.sh tests
+        run: bash scripts/next-version.test.sh

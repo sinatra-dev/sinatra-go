@@ -1,0 +1,129 @@
+name: release
+
+# Polls the live API spec every hour. When it changed, or a release-worthy
+# commit landed since the last tag, this regenerates the SDK, runs every
+# test and works out the next version (build), then pushes the release
+# commit and its vX.Y.Z tag, creates the GitHub release and warms the Go
+# module proxy (tag). For a Go module the tag push is the publish. See
+# RELEASING.md.
+#
+# The two jobs hold different powers. build runs the Go toolchain, the
+# generator and Prism with a read-only token and no stored credentials. tag
+# holds the write token and installs nothing: it only checks the release
+# commit build made and pushes it.
+#
+# tag runs only when the repository variable PUBLISH_ENABLED is 'true', on
+# main, and not as a dry run. That condition is written in its `if:` from
+# vars/inputs/github only, so nothing build runs can open it. Keep it (and
+# build's DRY_RUN/PUBLISH_ENABLED, used for its notice) in step.
+
+on:
+  schedule:
+    - cron: "37 * * * *"
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build, test and version, but skip the tag job"
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    outputs:
+      release: ${{ steps.plan.outputs.release }}
+      missing_release: ${{ steps.plan.outputs.missing_release }}
+      version: ${{ steps.version.outputs.version }}
+    env:
+      DRY_RUN: ${{ inputs.dry_run == true && 'true' || 'false' }}
+      PUBLISH_ENABLED: ${{ vars.PUBLISH_ENABLED == 'true' && github.ref == 'refs/heads/main' && 'true' || 'false' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # tags and history, for the last tag and the commits since it
+          persist-credentials: false
+
+      - run: bash scripts/install-oasdiff.sh
+
+      # Needs only git, curl, jq, gh and oasdiff, so a run with nothing to
+      # release stops before installing anything.
+      - name: Plan
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/release.sh plan
+
+      # No module cache in a release.
+      - if: steps.plan.outputs.release == 'true'
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          cache: false
+      - if: steps.plan.outputs.release == 'true'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Regenerate
+        if: steps.plan.outputs.release == 'true'
+        run: go generate ./...
+      - name: Build and vet
+        if: steps.plan.outputs.release == 'true'
+        run: go build ./... && go vet ./...
+      - name: Tests
+        if: steps.plan.outputs.release == 'true'
+        run: |
+          go test -race -count=1 ./...
+          bash scripts/contract.sh
+          PATH="$PWD/.tools/bin:$PATH" bash scripts/next-version.test.sh
+      - name: Version
+        id: version
+        if: steps.plan.outputs.release == 'true'
+        run: bash scripts/release.sh version
+      - name: Release commit
+        if: steps.plan.outputs.release == 'true'
+        run: bash scripts/release.sh pack
+
+      - if: steps.plan.outputs.release == 'true' || steps.plan.outputs.missing_release != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release
+          path: release-state/
+          if-no-files-found: error
+      - name: Gate
+        if: steps.plan.outputs.release == 'true' || steps.plan.outputs.missing_release != ''
+        run: bash scripts/release.sh gate
+
+  tag:
+    needs: build
+    if: >-
+      !cancelled() && needs.build.result == 'success' &&
+      vars.PUBLISH_ENABLED == 'true' && github.ref == 'refs/heads/main' && inputs.dry_run != true &&
+      (needs.build.outputs.release == 'true' || needs.build.outputs.missing_release != '')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write # push the release commit and tag, create the GitHub release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release
+          path: release-state
+      - name: Push the release commit and tag, create the GitHub release, warm the proxy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/release.sh tag
