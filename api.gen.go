@@ -190,6 +190,9 @@ type ErrorBody struct {
 type Me struct {
 	// User The user the token acts as.
 	User struct {
+		// Email The user's email address: the one they sign in with by email, or their primary GitHub email.
+		Email string `json:"email"`
+
 		// GithubLogin The user's GitHub login. `null` for a user without GitHub.
 		GithubLogin *string `json:"githubLogin"`
 

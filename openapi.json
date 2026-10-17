@@ -1791,12 +1791,17 @@
                   }
                 ],
                 "description": "The user's name, if they have one."
+              },
+              "email": {
+                "type": "string",
+                "description": "The user's email address: the one they sign in with by email, or their primary GitHub email."
               }
             },
             "required": [
               "id",
               "githubLogin",
-              "name"
+              "name",
+              "email"
             ],
             "description": "The user the token acts as."
           },
