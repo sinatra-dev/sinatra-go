@@ -1,0 +1,11 @@
+# Applied to openapi.json before generating; it never changes the spec file.
+overlay: 1.0.0
+info:
+  title: sinatra-go generator overlay
+  version: 1.0.0
+actions:
+  # The spec's Error schema becomes ErrorBody, so the name Error is free for
+  # the client's error type (error.go).
+  - target: $.components.schemas.Error
+    update:
+      x-go-name: ErrorBody

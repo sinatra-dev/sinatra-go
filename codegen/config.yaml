@@ -1,0 +1,17 @@
+# oapi-codegen settings for api.gen.go. See generate.go.
+package: sinatra
+output: api.gen.go
+generate:
+  models: true
+  # Only the request builders (see codegen/client.tmpl); sinatra.go is the client.
+  client: true
+output-options:
+  overlay:
+    path: codegen/overlay.yaml
+  user-templates:
+    client.tmpl: codegen/client.tmpl
+    client-with-responses.tmpl: codegen/client-with-responses.tmpl
+    imports.tmpl: codegen/imports.tmpl
+compatibility:
+  # DelegateLinearTicketSourceLinear, not a bare Linear in package sinatra.
+  always-prefix-enum-values: true
