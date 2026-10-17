@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Tests scripts/next-version.sh against specs derived from openapi.json.
+# Tests scripts/next-version.sh against fixture specs built on openapi.json (or
+# the spec given). Shared byte for byte by sinatra-node, sinatra-python and
+# sinatra-go, like next-version.sh.
 # Needs oasdiff (or OASDIFF) and jq, like the script itself.
 #
 #   bash scripts/next-version.test.sh [spec.json]
@@ -12,18 +14,40 @@ base_spec=${1:-"$here/../openapi.json"}
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
-cp "$base_spec" "$work/base.json"
+# The fixtures change only things this test injects, under names the API can
+# never use (a /__test_only__/ path, testOnly.* operation ids, xTestOnly*
+# fields), so they keep meaning the same thing whatever the real spec gains
+# or loses. The real spec only provides a valid document to inject into.
+if jq -e '.paths // {} | keys | any(startswith("/__test_only__"))' "$base_spec" >/dev/null; then
+  echo "FAIL $base_spec already has a /__test_only__ path"
+  exit 1
+fi
+op='.paths["/__test_only__/items"].get'
+schema="$op.responses[\"200\"].content[\"application/json\"].schema"
+jq '.paths["/__test_only__/items"] = {get: {
+      operationId: "testOnly.list",
+      summary: "Test only",
+      description: "Injected by next-version.test.sh.",
+      responses: {"200": {description: "OK", content: {"application/json": {schema: {
+        type: "object",
+        description: "Test only.",
+        properties: {xTestOnlyRequired: {type: "string", description: "Test only."}},
+        required: ["xTestOnlyRequired"]
+      }}}}}
+    }}' "$base_spec" >"$work/base.json"
 # Prose only: oasdiff's changelog is empty.
-jq '.info.description = "Changed prose." | .components.schemas.Task.properties.status.description = "Other words."' \
-  "$base_spec" >"$work/prose.json"
+jq "$op.description = \"Other words.\" | $schema.description = \"Other words.\" |
+    $schema.properties.xTestOnlyRequired.description = \"Other words.\"" "$work/base.json" >"$work/prose.json"
 # Additive: a new optional response field, and a new operation.
-jq '.components.schemas.Task.properties.priority = {type: "string"}' "$base_spec" >"$work/new-field.json"
-jq '.paths["/v1/workspaces/{workspaceId}/tasks/{taskId}"].delete = (.paths["/v1/workspaces/{workspaceId}/tasks/{taskId}"].get | .operationId = "tasks.delete")' \
-  "$base_spec" >"$work/new-operation.json"
-# Breaking: an operation removed, and a required response field removed.
-jq 'del(.paths["/v1/workspaces/{workspaceId}/tasks/{taskId}/stop"])' "$base_spec" >"$work/removed-operation.json"
-jq 'del(.components.schemas.Task.properties.status) | .components.schemas.Task.required -= ["status"]' \
-  "$base_spec" >"$work/removed-field.json"
+jq "$schema.properties.xTestOnlyField = {type: \"string\"}" "$work/base.json" >"$work/new-field.json"
+jq '.paths["/__test_only__/items/{id}"] = {delete: {
+      operationId: "testOnly.delete",
+      parameters: [{name: "id", in: "path", required: true, schema: {type: "string"}}],
+      responses: {"204": {description: "Deleted"}}
+    }}' "$work/base.json" >"$work/new-operation.json"
+# Breaking: the injected operation removed, and its required response field removed.
+jq 'del(.paths["/__test_only__/items"])' "$work/base.json" >"$work/removed-operation.json"
+jq "del($schema.properties.xTestOnlyRequired) | $schema.required = []" "$work/base.json" >"$work/removed-field.json"
 # Not a spec at all.
 printf '{not json' >"$work/broken.json"
 
