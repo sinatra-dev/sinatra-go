@@ -19,11 +19,18 @@
 #            that commit as a git bundle. Everything the tag job needs is then
 #            in release-state/, which the workflow uploads as an artifact.
 #   gate     Say whether the tag job will run, and why not.
+# Job "verify" (read-only token, Go only: no npm, no Prism, no cache):
+#   verify   Check the bundled release commit independently of everything
+#            build ran: its shape, its version, that its openapi.json is the
+#            live spec and steers no generator option, that the pinned
+#            generator makes exactly its api.gen.go from it, and that it
+#            builds, vets and passes the unit tests.
 # Job "tag" (contents: write, installs nothing):
-#   tag      Create the missing GitHub release, if any. Verify the bundled
-#            release commit, refuse if main moved, push the commit and its
-#            vX.Y.Z tag to main in one atomic push, create the GitHub release,
-#            then fetch the version from the Go module proxy so it's listed.
+#   tag      Create the missing GitHub release, if any. Check the bundled
+#            release commit is the one verify passed, refuse if main moved,
+#            push the commit and its vX.Y.Z tag to main in one atomic push,
+#            create the GitHub release, then fetch the version from the Go
+#            module proxy so it's listed.
 #
 # Environment:
 #   SPEC_URL         the live spec (default https://api.sinatra.dev/openapi.json)
@@ -33,6 +40,8 @@
 #                    workflow's job condition is the real gate)
 #   RELEASE_BRANCH   the branch releases come from and go to (default main)
 #   GOPROXY_URL      the module proxy to warm (default https://proxy.golang.org)
+#   VERIFIED_SHA, VERIFIED_VERSION
+#                    tag: the release commit and version the verify job passed
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -46,7 +55,7 @@ STATE=release-state
 # Only commits touching these count as a reason to release: the Go source
 # (not tests), the module files and the generator settings. Docs, CI, scripts
 # and test-only commits wait for the next release.
-RELEASE_PATHS=('*.go' ':(exclude)*_test.go' go.mod go.sum codegen)
+RELEASE_PATHS=('*.go' ':(exclude)*_test.go' ':(exclude)examples' go.mod go.sum codegen)
 # The only files a release commit may change.
 RELEASE_FILES=(openapi.json api.gen.go)
 PATH="$PWD/.tools/bin:$PATH"
@@ -108,18 +117,35 @@ write_notes() {
   } >"$out"
 }
 
+# fetch_spec <out>: the live spec (or SPEC_FILE), checked to be OpenAPI.
+fetch_spec() {
+  if [ -n "${SPEC_FILE:-}" ]; then
+    cp "$SPEC_FILE" "$1"
+  else
+    curl -fsSL --retry 3 --retry-all-errors --max-time 60 -o "$1" "$SPEC_URL"
+  fi
+  jq -e '(.openapi | type == "string") and (.paths | type == "object")' "$1" >/dev/null ||
+    die "the spec from ${SPEC_FILE:-$SPEC_URL} isn't an OpenAPI document"
+}
+
+# check_major <version>: Go needs v2 and up under their own module path
+# (.../v2). Tagging v2.0.0 on this path would push a tag the go command
+# rejects, so stop first.
+check_major() {
+  local version=$1 major=${1%%.*} want root=$MODULE
+  [[ "$root" =~ /v[0-9]+$ ]] && root=${root%/v*}
+  want=$root
+  [ "$major" -lt 2 ] || want=$root/v$major
+  [ "$MODULE" = "$want" ] ||
+    die "the next version is v$version, but the module path is $MODULE: v$version needs $want. See RELEASING.md, 'Major versions'."
+}
+
 step_plan() {
   rm -rf "$STATE"
   mkdir -p "$STATE"
   git rev-parse HEAD >"$STATE/base-sha"
 
-  if [ -n "${SPEC_FILE:-}" ]; then
-    cp "$SPEC_FILE" "$STATE/live.json"
-  else
-    curl -fsSL --retry 3 --retry-all-errors --max-time 60 -o "$STATE/live.json" "$SPEC_URL"
-  fi
-  jq -e '(.openapi | type == "string") and (.paths | type == "object")' "$STATE/live.json" >/dev/null ||
-    die "the spec from ${SPEC_FILE:-$SPEC_URL} isn't an OpenAPI document"
+  fetch_spec "$STATE/live.json"
 
   local tags tag previous
   tags=$(release_tags)
@@ -177,14 +203,7 @@ step_version() {
   local tag version
   tag=$(state last-tag)
   version=$(bash scripts/next-version.sh "$STATE/old.json" openapi.json "$tag")
-  # Go needs v2 and up under their own module path (.../v2). Tagging v2.0.0
-  # on this path would push a tag the go command rejects, so stop first.
-  local major=${version%%.*} want root=$MODULE
-  [[ "$root" =~ /v[0-9]+$ ]] && root=${root%/v*}
-  want=$root
-  [ "$major" -lt 2 ] || want=$root/v$major
-  [ "$MODULE" = "$want" ] ||
-    die "the next version is v$version, but the module path is $MODULE: v$version needs $want. See RELEASING.md, 'Major versions'."
+  check_major "$version"
   echo "$version" >"$STATE/version"
   VERSION_TAG="v$version" write_notes "$tag" HEAD "$STATE/old.json" openapi.json "$STATE/notes.md"
 
@@ -225,11 +244,11 @@ step_gate() {
     what="create the missing GitHub release for $(state missing-tag)"
   fi
   if [ "${DRY_RUN:-false}" = "true" ]; then
-    notice "Dry run: the tag job is skipped. A real run would $what."
+    notice "Dry run: verify still runs, the tag job is skipped. A real run would $what."
   elif [ "${PUBLISH_ENABLED:-}" != "true" ]; then
-    notice "PUBLISH_ENABLED isn't 'true' (or this isn't $BRANCH): the tag job is skipped. A real run would $what. See RELEASING.md."
+    notice "PUBLISH_ENABLED isn't 'true' (or this isn't $BRANCH): verify still runs, the tag job is skipped. A real run would $what. See RELEASING.md."
   else
-    echo "The tag job runs next, to $what."
+    echo "The verify and tag jobs run next, to $what."
   fi
 }
 
@@ -279,6 +298,85 @@ warm_proxy() {
   echo "$GOPROXY_URL has $MODULE@$tag: $info"
 }
 
+# Generator options a spec could set through extensions. oapi-codegen
+# v2.8.0 honours these; x-go-type-import, for one, adds any import to
+# api.gen.go. The API's spec uses none, so any of them is refused.
+GENERATOR_KEYS='^x-(go|oapi-codegen)-|^x-(client-response-wrapper|deprecated-reason|enum-varnames|enumnames|omitempty|omitzero|order)$'
+
+# version_above <a> <b>: whether X.Y.Z a is higher than X.Y.Z b.
+version_above() {
+  local IFS=. a b i
+  read -r -a a <<<"$1"
+  read -r -a b <<<"$2"
+  for i in 0 1 2; do
+    ((10#${a[i]} > 10#${b[i]})) && return 0
+    ((10#${a[i]} < 10#${b[i]})) && return 1
+  done
+  return 1
+}
+
+step_verify() {
+  [ -s "$STATE/version" ] || die "the artifact has no version to verify"
+  local version sha base state_dir highest
+  version=$(state version)
+  sha=$(state release-sha)
+  base=$(git rev-parse HEAD)
+  state_dir=$PWD/$STATE
+
+  # The commit: one commit on this job's checkout, only the two files.
+  git fetch -q "$STATE/release.bundle" HEAD
+  [ "$(git rev-parse FETCH_HEAD)" = "$sha" ] || die "release.bundle doesn't hold release commit $sha"
+  verify_release_commit "$sha"
+
+  # The version: X.Y.Z, above every existing tag, and a module path that
+  # allows its major version.
+  [[ "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] ||
+    die "the artifact's version '$version' isn't X.Y.Z"
+  highest=$(release_tags | sed -n 1p)
+  if [ -n "$highest" ] && ! version_above "$version" "${highest#v}"; then
+    die "the artifact's version $version isn't above the highest tag, $highest"
+  fi
+  check_major "$version"
+
+  # The spec: the live one, byte for byte as build writes it (jq .), and
+  # without generator options.
+  fetch_spec "$STATE/verify-live.json"
+  git show "$sha:openapi.json" >"$STATE/verify-bundle.json"
+  jq . "$STATE/verify-live.json" | cmp -s - "$STATE/verify-bundle.json" ||
+    die "release commit $sha's openapi.json isn't the live spec: the API changed since the build, or the bundle was altered. Not releasing; the next run builds from the live spec."
+  local keys
+  keys=$(jq -r --arg re "$GENERATOR_KEYS" '[.. | objects | keys[] | select(ascii_downcase | test($re))] | unique | join(", ")' "$STATE/verify-bundle.json")
+  [ -z "$keys" ] || die "release commit $sha's openapi.json sets generator options ($keys); refusing to generate from it"
+
+  # The code: regenerate api.gen.go in a worktree of the release commit with
+  # the base commit's generator settings, and require the same bytes. The
+  # release commit's api.gen.go is removed first, so `go generate` only reads
+  # directives from files the release commit can't change.
+  local wt
+  wt=$(mktemp -d)
+  git worktree add -q --detach "$wt" "$sha"
+  # shellcheck disable=SC2064 # expand $wt now
+  trap "git worktree remove --force '$wt' 2>/dev/null || true" EXIT
+  (
+    cd "$wt"
+    git checkout -q "$base" -- generate.go codegen scripts/derive-templates.sh
+    cp api.gen.go "$state_dir/verify-bundle-api.gen.go"
+    rm api.gen.go
+    go generate ./...
+    cmp -s api.gen.go "$state_dir/verify-bundle-api.gen.go" ||
+      die "release commit $sha's api.gen.go isn't what oapi-codegen generates from its openapi.json: $(diff "$state_dir/verify-bundle-api.gen.go" api.gen.go | head -20 | tr '\n' ' ')"
+    [ -z "$(git status --porcelain --untracked-files=all)" ] || die "regenerating changed more than api.gen.go: $(git status --porcelain)"
+    go build ./...
+    go vet ./...
+    go test -race -count=1 ./...
+  )
+  git worktree remove --force "$wt"
+
+  output "release_sha=$sha"
+  output "version=$version"
+  echo "Verified release commit $sha for v$version."
+}
+
 step_tag() {
   if [ -s "$STATE/missing-tag" ]; then
     local missing
@@ -294,6 +392,8 @@ step_tag() {
   git fetch -q "$STATE/release.bundle" HEAD
   [ "$(git rev-parse FETCH_HEAD)" = "$sha" ] || die "release.bundle doesn't hold release commit $sha"
   verify_release_commit "$sha"
+  [ "${VERIFIED_SHA:-}" = "$sha" ] && [ "${VERIFIED_VERSION:-}" = "$version" ] ||
+    die "the verify job passed '${VERIFIED_SHA:-nothing}' as '${VERIFIED_VERSION:-nothing}', not release commit $sha as $version; not releasing"
 
   base=$(state base-sha)
   head=$(remote_head)
@@ -309,6 +409,6 @@ step_tag() {
 }
 
 case "${1:-}" in
-  plan | version | pack | gate | tag) "step_$1" ;;
-  *) die "usage: release.sh plan|version|pack|gate|tag" ;;
+  plan | version | pack | gate | verify | tag) "step_$1" ;;
+  *) die "usage: release.sh plan|version|pack|gate|verify|tag" ;;
 esac
