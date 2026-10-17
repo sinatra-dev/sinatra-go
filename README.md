@@ -18,65 +18,39 @@ The package name is `sinatra`.
 
 ## Quick start
 
+This is the body of `main` in [`examples/quickstart/main.go`](examples/quickstart/main.go), which has the imports and a `check` that calls `log.Fatal` on an error. It starts a task in your first workspace and prints the conversation until the turn ends:
+
 ```go
-package main
-
-import (
-	"context"
-	"fmt"
-	"log"
-	"time"
-
-	"github.com/sinatra-dev/sinatra-go"
-)
-
-func main() {
-	ctx := context.Background()
-	client, err := sinatra.NewClient() // reads SINATRA_TOKEN
-	if err != nil {
-		log.Fatal(err)
+ctx := context.Background()
+client, err := sinatra.NewClient() // reads SINATRA_TOKEN
+check(err)
+me, err := client.Me.Get(ctx)
+check(err)
+if len(me.Workspaces) == 0 {
+	log.Fatal("the token's user isn't in any workspace yet")
+}
+ws := me.Workspaces[0].Id
+created, err := client.Tasks.Create(ctx, ws, sinatra.CreateTaskRequest{Prompt: "Fix the flaky login test"},
+	sinatra.WithIdempotencyKey("fix-flaky-login-1"))
+check(err)
+working := map[string]bool{"pending": true, "investigating": true, "implementing": true, "rework": true}
+var after *string
+for ; ; time.Sleep(3 * time.Second) {
+	task, err := client.Tasks.Get(ctx, ws, created.Task.Id)
+	check(err)
+	for m, err := range client.Messages.ListAll(ctx, ws, task.Id, &sinatra.MessagesListParams{After: after}) {
+		check(err)
+		fmt.Printf("%s: %s\n", m.Role, m.Body)
+		after = &m.Id
 	}
-	me, err := client.Me.Get(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if len(me.Workspaces) == 0 {
-		log.Fatal("the token's user isn't in any workspace yet")
-	}
-	ws := me.Workspaces[0].Id
-
-	created, err := client.Tasks.Create(ctx, ws,
-		sinatra.CreateTaskRequest{Prompt: "Fix the flaky login test", Repo: sinatra.Ptr("acme/web")},
-		sinatra.WithIdempotencyKey("fix-flaky-login-1"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// The turn is done when the task leaves these statuses (for example, it reaches replied or pr_open).
-	working := map[string]bool{"pending": true, "investigating": true, "implementing": true, "rework": true}
-	var after *string
-	for {
-		task, err := client.Tasks.Get(ctx, ws, created.Task.Id)
-		if err != nil {
-			log.Fatal(err)
-		}
-		for m, err := range client.Messages.ListAll(ctx, ws, task.Id, &sinatra.MessagesListParams{After: after}) {
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Printf("%s: %s\n", m.Role, m.Body)
-			after = sinatra.Ptr(m.Id)
-		}
-		if !working[task.Status] {
-			fmt.Println("status:", task.Status)
-			return
-		}
-		time.Sleep(3 * time.Second)
+	if !working[task.Status] {
+		fmt.Println("status:", task.Status)
+		return
 	}
 }
 ```
 
-The API has no streaming. To wait for a reply, read the conversation after the last entry you've seen, and check the task's `Status`: the agent posts one reply per turn, and the turn is done when the task stops working. The loop reads the status before the conversation, so it never stops before printing the reply that ended the turn. An unknown status counts as done, so the loop can't wait forever on a status added after this was written. See [How replies work](https://docs.sinatra.dev/docs/cli-and-api#how-replies-work).
+The API has no streaming. To wait for a reply, read the conversation after the last entry you've seen, and check the task's `Status`: the agent posts one reply per turn, and the turn is done when the task leaves the `working` statuses (for example, it reaches `replied` or `pr_open`). The loop polls every 3 seconds. The loop reads the status before the conversation, so it never stops before printing the reply that ended the turn. An unknown status counts as done, so the loop can't wait forever on a status added after this was written. See [How replies work](https://docs.sinatra.dev/docs/cli-and-api#how-replies-work).
 
 ## Authentication
 
@@ -182,7 +156,7 @@ The [API reference](https://docs.sinatra.dev/docs/api-reference) lists every ope
 
 ## Versions
 
-Releases follow semver. While the version is `0.x`, a breaking API change bumps the minor version and anything else bumps the patch. From `1.0`, breaking changes bump the major version and additions bump the minor. Pin a version in your `go.mod` as usual.
+Releases follow semver. While the version is `0.x`, a breaking API change bumps the minor version and anything else bumps the patch. From `1.0`, additions bump the minor version, and a breaking change bumps the major version, which in Go also means a new module path ending in `/vN` (`github.com/sinatra-dev/sinatra-go/v2`) that you import instead. See [Major versions](RELEASING.md#major-versions). Pin a version in your `go.mod` as usual.
 
 ## Development
 
@@ -192,7 +166,7 @@ go vet ./... && go test -race ./...
 bash scripts/contract.sh           # every operation against a Prism mock of openapi.json (needs Node.js 24)
 bash scripts/install-oasdiff.sh    # the pinned oasdiff, into .tools/bin
 PATH="$PWD/.tools/bin:$PATH" bash scripts/next-version.test.sh
-bash scripts/check-readme.sh       # builds this README's quick start against the local module
+bash scripts/check-readme.sh       # the README's quick start is examples/quickstart's, and builds against this module
 ```
 
 `api.gen.go` is written by [oapi-codegen](https://github.com/oapi-codegen/oapi-codegen), pinned in `generate.go`, with the settings in `codegen/`, and is never edited by hand. CI fails if it differs from what `openapi.json` generates. `openapi.json` is updated by the release workflow. See [RELEASING.md](RELEASING.md).
