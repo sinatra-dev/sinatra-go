@@ -19,9 +19,11 @@
 #            that commit as a git bundle. Everything the tag job needs is then
 #            in release-state/, which the workflow uploads as an artifact.
 #   gate     Say whether the tag job will run, and why not.
-# Job "verify" (read-only token, Go only: no npm, no Prism, no cache):
+# Job "verify" (read-only token, Go and the pinned oasdiff only: no npm, no
+# Prism, no cache):
 #   verify   Check the bundled release commit independently of everything
-#            build ran: its shape, its version, that its openapi.json is the
+#            build ran: its shape, its version (recomputed with
+#            next-version.sh), that its openapi.json is the
 #            live spec and steers no generator option, that the pinned
 #            generator makes exactly its api.gen.go from it, and that it
 #            builds, vets and passes the unit tests.
@@ -338,6 +340,20 @@ step_verify() {
     die "the artifact's version $version isn't above the highest tag, $highest"
   fi
   check_major "$version"
+  # And exactly the version next-version.sh gives, run here with the pinned
+  # oasdiff: the highest tag's spec (what build's plan compares against) to
+  # the release commit's.
+  local expected
+  if [ -n "$highest" ]; then
+    git show "$highest:openapi.json" >"$STATE/verify-old.json"
+  else
+    git show "$sha:openapi.json" >"$STATE/verify-old.json"
+  fi
+  git show "$sha:openapi.json" >"$STATE/verify-new.json"
+  expected=$(bash scripts/next-version.sh "$STATE/verify-old.json" "$STATE/verify-new.json" "$highest") ||
+    die "next-version.sh failed on the release commit's spec"
+  [ "$version" = "$expected" ] ||
+    die "the artifact's version is $version, but the spec change since ${highest:-the start} makes it $expected"
 
   # The spec: the live one, byte for byte as build writes it (jq .), and
   # without generator options.

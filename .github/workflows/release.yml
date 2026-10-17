@@ -10,10 +10,11 @@ name: release
 #
 # The three jobs hold different powers. build runs the Go toolchain, the
 # generator and Prism (with its npm dependencies) with a read-only token and
-# no stored credentials. verify, also read-only, installs only Go: it
-# re-fetches the live spec, regenerates api.gen.go with the pinned generator
-# and runs the unit tests on the exact release commit. tag holds the write
-# token and installs nothing: it pushes only the commit verify passed.
+# no stored credentials. verify, also read-only, installs only Go and the
+# checksum-pinned oasdiff: it recomputes the version, re-fetches the live
+# spec, regenerates api.gen.go with the pinned generator and runs the unit
+# tests on the exact release commit. tag holds the write token and installs
+# nothing: it pushes only the commit verify passed.
 #
 # tag runs only when the repository variable PUBLISH_ENABLED is 'true', on
 # main, and not as a dry run, and (when releasing) only after verify
@@ -136,6 +137,8 @@ jobs:
         with:
           go-version: stable
           cache: false
+      # SHA-256-checked, for recomputing the version with next-version.sh.
+      - run: bash scripts/install-oasdiff.sh
       - name: Verify the release commit
         id: verify
         run: bash scripts/release.sh verify
