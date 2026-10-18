@@ -1,8 +1,10 @@
-# sinatra-go
+# Sinatra Go SDK
 
-A Go client for the [Sinatra API](https://docs.sinatra.dev/docs/api-reference): start, follow and stop Sinatra tasks, and delegate Linear and GitHub issues.
+`sinatra-go` is the official Go client for [sinatra.dev](https://www.sinatra.dev), the hosted AI coding agent that turns Linear and GitHub issues into pull requests. Assign Sinatra an issue, mention it in Slack, or start a task from code, and it writes the change in its own sandbox and opens a draft pull request for your team to review.
 
-It needs Go 1.24 or later. The types are generated from the API's [OpenAPI spec](https://api.sinatra.dev/openapi.json), and a new version is released automatically when the spec changes.
+With this client you can start, follow and stop Sinatra tasks and delegate Linear and GitHub issues from your own programs, CI jobs and tools, through the [Sinatra API](https://docs.sinatra.dev/docs/api-reference).
+
+It needs Go 1.24 or later. The types are generated from the API's [OpenAPI spec](https://api.sinatra.dev/openapi.json), and a new version is released automatically when the spec changes. There are also official SDKs for [Node.js / TypeScript](https://github.com/sinatra-dev/sinatra-node) and [Python](https://github.com/sinatra-dev/sinatra-python); see [SDKs](https://docs.sinatra.dev/docs/sdks).
 
 ## Install
 
@@ -51,6 +53,21 @@ for ; ; time.Sleep(3 * time.Second) {
 ```
 
 The API has no streaming. To wait for a reply, read the conversation after the last entry you've seen, and check the task's `Status`: the agent posts one reply per turn, and the turn is done when the task leaves the `working` statuses (for example, it reaches `replied` or `pr_open`). The loop polls every 3 seconds. The loop reads the status before the conversation, so it never stops before printing the reply that ended the turn. An unknown status counts as done, so the loop can't wait forever on a status added after this was written. See [How replies work](https://docs.sinatra.dev/docs/cli-and-api#how-replies-work).
+
+## Examples
+
+[`examples/`](examples) has small programs you can run as they are:
+
+- [`quickstart`](examples/quickstart/main.go): the quick start above.
+- [`delegate-issue`](examples/delegate-issue/main.go): hand Sinatra a Linear issue (`ENG-123`) or a GitHub issue (`acme/web#42`), for example from a CI job.
+- [`search-issues`](examples/search-issues/main.go): list the open issues you could delegate, yours first.
+- [`open-prs`](examples/open-prs/main.go): print the pull requests Sinatra has open in each workspace as a Markdown list, for a standup or a Slack post.
+
+From a checkout:
+
+```sh
+SINATRA_TOKEN=sntr_... go run ./examples/open-prs
+```
 
 ## Authentication
 
