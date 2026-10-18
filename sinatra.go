@@ -1,5 +1,6 @@
-// Package sinatra is a Go client for the Sinatra API: start, follow and stop
-// Sinatra tasks, and delegate Linear and GitHub issues.
+// Package sinatra is the official Go client for sinatra.dev, the AI coding
+// agent that turns Linear and GitHub issues into pull requests: start, follow
+// and stop Sinatra tasks, and delegate Linear and GitHub issues.
 //
 // The types (Task, Message, Me, ...) are generated from the API's OpenAPI spec
 // into api.gen.go. The client in this file adds authentication, retries,
