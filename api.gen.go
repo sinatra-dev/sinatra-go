@@ -281,7 +281,7 @@ type Task struct {
 	// Status Where the task is in its life, such as `pending`, `implementing`, `replied`, `pr_open` or `completed`. New statuses can appear, so don't treat the list as closed. See [Raw statuses](https://docs.sinatra.dev/docs/getting-started/how-it-works#raw-statuses) for each one.
 	Status string `json:"status"`
 
-	// Title The task's title. `null` for a task whose issue has no title.
+	// Title The task's title: its issue's title, or a chat task's name. `null` for a task whose issue has no title, or a chat task not yet named.
 	Title *string `json:"title"`
 
 	// Url The task's page in the Sinatra dashboard, where anyone in the workspace can follow it. On a task started from the CLI, MCP, API or dashboard they can reply there too.

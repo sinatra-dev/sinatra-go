@@ -1949,7 +1949,7 @@
                 "type": "null"
               }
             ],
-            "description": "The task's title. `null` for a task whose issue has no title."
+            "description": "The task's title: its issue's title, or a chat task's name. `null` for a task whose issue has no title, or a chat task not yet named."
           },
           "repo": {
             "anyOf": [
