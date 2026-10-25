@@ -90,6 +90,9 @@ type CreateMessageResponse struct {
 
 // CreateTaskRequest A task to start.
 type CreateTaskRequest struct {
+	// Model A model from Sinatra's catalog, such as `anthropic/claude-opus-5-5` or `openai-codex/gpt-6.1-sol`, that every turn of the task runs on. The model picks its engine. Omit it to use the repository's or workspace's model.
+	Model *string `json:"model,omitempty"`
+
 	// Prompt What to do, as you'd ask a teammate. Up to 100,000 characters, after trimming.
 	Prompt string `json:"prompt"`
 
@@ -155,7 +158,7 @@ type ErrorBody struct {
 	// BillingUrl The settings section that fixes the refusal: your model credentials or billing, on `payment_required`; billing, when starting a task, on `capacity_full`.
 	BillingUrl *string `json:"billingUrl,omitempty"`
 
-	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `assigned_to_other`, `bad_request`, `capacity_full`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `internal_error`, `invalid_body`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_prompt`, `invalid_repo`, `invalid_status`, `invalid_title`, `invalid_token`, `issue_closed`, `issue_not_found`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `not_an_api_task`, `not_an_issue`, `not_found`, `not_running`, `payment_required`, `repo_disabled`, `unavailable`.
+	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `assigned_to_other`, `bad_request`, `capacity_full`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `internal_error`, `invalid_body`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_model`, `invalid_prompt`, `invalid_repo`, `invalid_status`, `invalid_title`, `invalid_token`, `issue_closed`, `issue_not_found`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `not_an_api_task`, `not_an_issue`, `not_found`, `not_running`, `payment_required`, `repo_disabled`, `unavailable`.
 	Error string `json:"error"`
 
 	// MessageId On `unavailable`: the message that was saved but not sent yet. Retry with it as the `Idempotency-Key`.

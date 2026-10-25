@@ -382,7 +382,7 @@
           "Tasks"
         ],
         "summary": "Start a task",
-        "description": "Starts a task and returns `202` with the task and the id of your first message. The task runs like any other: it gets a sandbox, can open a pull request, and shows up in the dashboard.\n\nOnly `prompt` is required. `title` defaults to the prompt's first line, up to 80 characters. `repo` is optional: omit it to let the agent choose a repository.\n\nBefore it makes the task, Sinatra checks that the workspace is connected to GitHub when the start names a repository (without GitHub a task that names none can still answer, research or plan), that billing allows the task, and that the queue has room. A refusal says which in its `error` code, and a retry with the same key of a start that already made its task is never refused.\n\nSend an `Idempotency-Key` so a retry is safe. A start retried with the same key returns the same task and never starts a second one. The same key with a different prompt, or a different repository or title if you send them, is `409 idempotency_conflict`. Keys belong to the person who sent them. The key becomes the first message's `messageId`.\n\nIf Sinatra saves your request but can't hand it to the agent yet, it answers `503 unavailable` with the new `taskId` and `messageId`. Retry with the same key, or send a message on that task, which sends your prompt first.\n\nA task started this way counts against the workspace's plan like any other. A running turn takes one of the plan's tasks at a time; past that it's queued. See [How the queue works](https://docs.sinatra.dev/docs/managed/billing#how-the-queue-works). It also needs model access, like a task delegated from Linear or GitHub. See [Models](https://docs.sinatra.dev/docs/configuration/models).",
+        "description": "Starts a task and returns `202` with the task and the id of your first message. The task runs like any other: it gets a sandbox, can open a pull request, and shows up in the dashboard.\n\nOnly `prompt` is required. `title` defaults to the prompt's first line, up to 80 characters. `repo` is optional: omit it to let the agent choose a repository. `model` is optional: omit it to use the repository's or workspace's model. See [Models](https://docs.sinatra.dev/docs/configuration/models).\n\nBefore it makes the task, Sinatra checks that the workspace is connected to GitHub when the start names a repository (without GitHub a task that names none can still answer, research or plan), that billing allows the task, and that the queue has room. A refusal says which in its `error` code, and a retry with the same key of a start that already made its task is never refused.\n\nSend an `Idempotency-Key` so a retry is safe. A start retried with the same key returns the same task and never starts a second one. The same key with a different prompt, or a different repository, title or model if you send them, is `409 idempotency_conflict`. Keys belong to the person who sent them. The key becomes the first message's `messageId`.\n\nIf Sinatra saves your request but can't hand it to the agent yet, it answers `503 unavailable` with the new `taskId` and `messageId`. Retry with the same key, or send a message on that task, which sends your prompt first.\n\nA task started this way counts against the workspace's plan like any other. A running turn takes one of the plan's tasks at a time; past that it's queued. See [How the queue works](https://docs.sinatra.dev/docs/managed/billing#how-the-queue-works). It also needs model access, like a task delegated from Linear or GitHub. See [Models](https://docs.sinatra.dev/docs/configuration/models).",
         "parameters": [
           {
             "name": "workspaceId",
@@ -424,7 +424,7 @@
             }
           },
           "400": {
-            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.\n- `invalid_idempotency_key`: The `Idempotency-Key` isn't 1 to 128 printable ASCII characters, with no spaces.\n- `invalid_prompt`: `prompt` is missing, empty, or over 100,000 characters. A body not sent as `application/json` has no `prompt`.\n- `invalid_repo`: `repo` isn't a repository connected to the workspace.\n- `invalid_title`: `title` is empty or over 200 characters.",
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.\n- `invalid_idempotency_key`: The `Idempotency-Key` isn't 1 to 128 printable ASCII characters, with no spaces.\n- `invalid_model`: `model` isn't a model Sinatra offers.\n- `invalid_prompt`: `prompt` is missing, empty, or over 100,000 characters. A body not sent as `application/json` has no `prompt`.\n- `invalid_repo`: `repo` isn't a repository connected to the workspace.\n- `invalid_title`: `title` is empty or over 200 characters.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -472,7 +472,7 @@
             }
           },
           "409": {
-            "description": "Conflict. The `error` code says which:\n\n- `capacity_full`: The workspace's queue is full. `reason` is the message to show, the same one the dashboard shows. When starting a task, the body also has `plan`, `running`, `queued` and `billingUrl`.\n- `github_not_connected`: The start names a repository but the workspace isn't connected to GitHub (`refusal` is `missing`), or its GitHub App installation is suspended (`refusal` is `suspended`). Without GitHub, a start that names no repository runs: it can answer, research or plan. `reason` says what to do and ends with `settingsUrl`: the workspace's Integrations settings, where an owner or admin connects GitHub, or the installation's page on GitHub when it's suspended.\n- `idempotency_conflict`: The `Idempotency-Key` was already used for a start with a different prompt, or a different repository or title if the retry sends them.\n- `payment_required`: Billing would stop the task: you have no model access in this workspace (`refusal` is `own_credentials_required`), or its subscription is past due (`refusal` is `subscription_inactive`). `reason` says what to do and ends with `billingUrl`, the settings section that fixes it: your model credentials for `own_credentials_required`, billing for `subscription_inactive`.",
+            "description": "Conflict. The `error` code says which:\n\n- `capacity_full`: The workspace's queue is full. `reason` is the message to show, the same one the dashboard shows. When starting a task, the body also has `plan`, `running`, `queued` and `billingUrl`.\n- `github_not_connected`: The start names a repository but the workspace isn't connected to GitHub (`refusal` is `missing`), or its GitHub App installation is suspended (`refusal` is `suspended`). Without GitHub, a start that names no repository runs: it can answer, research or plan. `reason` says what to do and ends with `settingsUrl`: the workspace's Integrations settings, where an owner or admin connects GitHub, or the installation's page on GitHub when it's suspended.\n- `idempotency_conflict`: The `Idempotency-Key` was already used for a start with a different prompt, or a different repository, title or model if the retry sends them.\n- `payment_required`: Billing would stop the task: you have no model access in this workspace (`refusal` is `own_credentials_required`), or its subscription is past due (`refusal` is `subscription_inactive`). `reason` says what to do and ends with `billingUrl`, the settings section that fixes it: your model credentials for `own_credentials_required`, billing for `subscription_inactive`.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -1605,6 +1605,17 @@
                 "type": "null"
               }
             ]
+          },
+          "model": {
+            "description": "A model from Sinatra's catalog, such as `anthropic/claude-opus-5-5` or `openai-codex/gpt-6.1-sol`, that every turn of the task runs on. The model picks its engine. Omit it to use the repository's or workspace's model.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -1712,7 +1723,7 @@
         "properties": {
           "error": {
             "type": "string",
-            "description": "A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `assigned_to_other`, `bad_request`, `capacity_full`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `internal_error`, `invalid_body`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_prompt`, `invalid_repo`, `invalid_status`, `invalid_title`, `invalid_token`, `issue_closed`, `issue_not_found`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `not_an_api_task`, `not_an_issue`, `not_found`, `not_running`, `payment_required`, `repo_disabled`, `unavailable`."
+            "description": "A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `assigned_to_other`, `bad_request`, `capacity_full`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `internal_error`, `invalid_body`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_model`, `invalid_prompt`, `invalid_repo`, `invalid_status`, `invalid_title`, `invalid_token`, `issue_closed`, `issue_not_found`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `not_an_api_task`, `not_an_issue`, `not_found`, `not_running`, `payment_required`, `repo_disabled`, `unavailable`."
           },
           "reason": {
             "description": "A sentence saying what went wrong and, where it helps, what to do. Written to show to a person.",
