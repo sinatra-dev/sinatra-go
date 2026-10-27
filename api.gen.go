@@ -90,7 +90,7 @@ type CreateMessageResponse struct {
 
 // CreateTaskRequest A task to start.
 type CreateTaskRequest struct {
-	// Model A model from Sinatra's catalog, such as `anthropic/claude-opus-5-5` or `openai-codex/gpt-6.1-sol`, that every turn of the task runs on. The model picks its engine. Omit it to use the repository's or workspace's model.
+	// Model A model from Sinatra's catalog, such as `anthropic/claude-opus-5-5` or `openai-codex/gpt-6.1-sol`, that every agent on the task runs on. The model picks its engine. Omit it to use the repository's or workspace's model.
 	Model *string `json:"model,omitempty"`
 
 	// Prompt What to do, as you'd ask a teammate. Up to 100,000 characters, after trimming.
@@ -167,7 +167,7 @@ type ErrorBody struct {
 	// Plan The workspace's plan, on `capacity_full` when starting a task.
 	Plan *string `json:"plan,omitempty"`
 
-	// Queued How many tasks the plan queues, on `capacity_full` when starting a task.
+	// Queued How many agents the plan lets wait, on `capacity_full` when starting a task.
 	Queued *int `json:"queued,omitempty"`
 
 	// Reason A sentence saying what went wrong and, where it helps, what to do. Written to show to a person.
@@ -179,7 +179,7 @@ type ErrorBody struct {
 	// RequestId The request's id. Present on some errors, not all; the `x-request-id` response header always carries it. Share it with support.
 	RequestId *string `json:"requestId,omitempty"`
 
-	// Running How many tasks the plan runs at a time, on `capacity_full` when starting a task.
+	// Running How many agents the plan runs at a time, on `capacity_full` when starting a task.
 	Running *int `json:"running,omitempty"`
 
 	// SettingsUrl The settings page that fixes the refusal, on `github_not_connected`.
@@ -221,7 +221,7 @@ type Message struct {
 	// Id The entry's id. Pass the last one you read as `after` to get only later entries.
 	Id string `json:"id"`
 
-	// Kind What it is: `message` (a person's message), `response` (the agent's answer for a turn, or a notice from Sinatra such as a stop or files the agent produced), `clarify` (a question the agent needs answered to continue) or `error` (a refusal or failure from Sinatra). New kinds can appear.
+	// Kind What it is: `message` (a person's message), `response` (the agent's answer, or a notice from Sinatra such as a stop or files the agent produced), `clarify` (a question the agent needs answered to continue) or `error` (a refusal or failure from Sinatra). New kinds can appear.
 	Kind string `json:"kind"`
 
 	// MessageId For a message a person sent: the id it was sent with, which is its idempotency key or a generated id. `null` on every other entry.
@@ -272,7 +272,7 @@ type Task struct {
 	// PullRequest The task's pull request. `null` until one opens.
 	PullRequest *PullRequest `json:"pullRequest"`
 
-	// Queued `true` while a turn waits because the workspace is already running as many tasks at a time as its plan allows. The dashboard shows this as Queued.
+	// Queued `true` while the task's agent waits because the workspace is already running as many agents at a time as its plan allows. The dashboard shows this as Waiting.
 	Queued bool `json:"queued"`
 
 	// Repo `owner/name` of the task's repository. `null` until a repository is chosen.

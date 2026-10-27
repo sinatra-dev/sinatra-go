@@ -382,7 +382,7 @@
           "Tasks"
         ],
         "summary": "Start a task",
-        "description": "Starts a task and returns `202` with the task and the id of your first message. The task runs like any other: it gets a sandbox, can open a pull request, and shows up in the dashboard.\n\nOnly `prompt` is required. `title` defaults to the prompt's first line, up to 80 characters. `repo` is optional: omit it to let the agent choose a repository. `model` is optional: omit it to use the repository's or workspace's model. See [Models](https://docs.sinatra.dev/docs/configuration/models).\n\nBefore it makes the task, Sinatra checks that the workspace is connected to GitHub when the start names a repository (without GitHub a task that names none can still answer, research or plan), that billing allows the task, and that the queue has room. A refusal says which in its `error` code, and a retry with the same key of a start that already made its task is never refused.\n\nSend an `Idempotency-Key` so a retry is safe. A start retried with the same key returns the same task and never starts a second one. The same key with a different prompt, or a different repository, title or model if you send them, is `409 idempotency_conflict`. Keys belong to the person who sent them. The key becomes the first message's `messageId`.\n\nIf Sinatra saves your request but can't hand it to the agent yet, it answers `503 unavailable` with the new `taskId` and `messageId`. Retry with the same key, or send a message on that task, which sends your prompt first.\n\nA task started this way counts against the workspace's plan like any other. A running turn takes one of the plan's tasks at a time; past that it's queued. See [How the queue works](https://docs.sinatra.dev/docs/managed/billing#how-the-queue-works). It also needs model access, like a task delegated from Linear or GitHub. See [Models](https://docs.sinatra.dev/docs/configuration/models).",
+        "description": "Starts a task and returns `202` with the task and the id of your first message. The task runs like any other: it gets a sandbox, can open a pull request, and shows up in the dashboard.\n\nOnly `prompt` is required. `title` defaults to the prompt's first line, up to 80 characters. `repo` is optional: omit it to let the agent choose a repository. `model` is optional: omit it to use the repository's or workspace's model. See [Models](https://docs.sinatra.dev/docs/configuration/models).\n\nBefore it makes the task, Sinatra checks that the workspace is connected to GitHub when the start names a repository (without GitHub a task that names none can still answer, research or plan), that billing allows the task, and that the queue has room. A refusal says which in its `error` code, and a retry with the same key of a start that already made its task is never refused.\n\nSend an `Idempotency-Key` so a retry is safe. A start retried with the same key returns the same task and never starts a second one. The same key with a different prompt, or a different repository, title or model if you send them, is `409 idempotency_conflict`. Keys belong to the person who sent them. The key becomes the first message's `messageId`.\n\nIf Sinatra saves your request but can't hand it to the agent yet, it answers `503 unavailable` with the new `taskId` and `messageId`. Retry with the same key, or send a message on that task, which sends your prompt first.\n\nA task started this way counts against the workspace's plan like any other. Each agent takes one of the plan's running places; past that it waits. See [How the queue works](https://docs.sinatra.dev/docs/managed/billing#how-the-queue-works). It also needs model access, like a task delegated from Linear or GitHub. See [Models](https://docs.sinatra.dev/docs/configuration/models).",
         "parameters": [
           {
             "name": "workspaceId",
@@ -687,7 +687,7 @@
           "Tasks"
         ],
         "summary": "Stop a task",
-        "description": "Stops the task's running turn and returns `202` with `{\"accepted\": true}`. It works on any task in the workspace, whatever its source, and any member can stop one. A completed or cancelled task, or one whose session has already ended, is `409 not_running`.",
+        "description": "Stops the task's running agent and returns `202` with `{\"accepted\": true}`. It works on any task in the workspace, whatever its source, and any member can stop one. A completed or cancelled task, or one whose session has already ended, is `409 not_running`.",
         "parameters": [
           {
             "name": "workspaceId",
@@ -875,7 +875,7 @@
           "Messages"
         ],
         "summary": "Send a message",
-        "description": "Sends a follow-up on a task and returns `202` with the message's id.\n\nAny member of the workspace can follow up on a task started from the API, CLI, MCP or dashboard. Follow up on other tasks, such as Linear or GitHub issues, where they started; here they return `409 not_an_api_task`. A task that has been idle for a while picks up again when you follow up.\n\nA message sent while the agent is working doesn't change the current turn. It waits and runs as the next turn. A message isn't refused when the workspace is running its limit of tasks: its turn takes a place in the queue, and if the queue is full, the refusal appears in the task's conversation instead.\n\nSend an `Idempotency-Key` so a retry is safe: a message retried with the same key is sent once. Keys belong to their sender, so two people using the same key send two messages. The key becomes the message's `messageId`.\n\nIf Sinatra saves the message but can't hand it to the agent yet, it answers `503 unavailable` with the `messageId`. Retry with that `messageId` as the `Idempotency-Key`, so the message is sent once.",
+        "description": "Sends a follow-up on a task and returns `202` with the message's id.\n\nAny member of the workspace can follow up on a task started from the API, CLI, MCP or dashboard. Follow up on other tasks, such as Linear or GitHub issues, where they started; here they return `409 not_an_api_task`. A task that has been idle for a while picks up again when you follow up.\n\nA message sent while the agent is working doesn't reach it. It waits and starts the next agent. A message isn't refused when the workspace is running as many agents at a time as its plan allows: the agent it starts takes a place in the queue, and if the queue is full, the refusal appears in the task's conversation instead.\n\nSend an `Idempotency-Key` so a retry is safe: a message retried with the same key is sent once. Keys belong to their sender, so two people using the same key send two messages. The key becomes the message's `messageId`.\n\nIf Sinatra saves the message but can't hand it to the agent yet, it answers `503 unavailable` with the `messageId`. Retry with that `messageId` as the `Idempotency-Key`, so the message is sent once.",
         "parameters": [
           {
             "name": "workspaceId",
@@ -911,7 +911,7 @@
         },
         "responses": {
           "202": {
-            "description": "The message was sent. The agent runs it as the task's next turn.",
+            "description": "The message was sent. It starts the task's next agent.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -1074,7 +1074,7 @@
           "Messages"
         ],
         "summary": "Read the conversation",
-        "description": "Returns the conversation of a task started from the API, CLI, MCP or dashboard, oldest first. A task that started elsewhere has no conversation here (`409 not_an_api_task`); its conversation is where it started.\n\nThe conversation holds final answers and questions, not progress. The agent posts one reply per turn: its answer, or a question when it needs your input. Sinatra adds its own notices, such as errors and refusals.\n\nEach entry's `role` and `kind` say what it is:\n\n- `user` and `message`: a message a person sent. `messageId` is its idempotency key, or a generated id.\n- `agent` and `response`: the agent's answer for a turn.\n- `agent` and `clarify`: a question the agent needs answered to continue.\n- `platform` and `response` or `error`: a message from Sinatra itself, such as a refusal, an error, a stop, or files the agent produced.\n\nWhen `next` isn't `null`, more entries follow: pass `next` as `after` to get the next page.\n\nThere is no streaming. To wait for a reply, poll this endpoint with `after` set to the `id` of the last entry you read, and check the task's `status` with Get a task. The turn is done when the task stops working, for example when it reaches `replied` or `pr_open`. While a task is queued, its conversation stays quiet; its `queued` field says so.",
+        "description": "Returns the conversation of a task started from the API, CLI, MCP or dashboard, oldest first. A task that started elsewhere has no conversation here (`409 not_an_api_task`); its conversation is where it started.\n\nThe conversation holds final answers and questions, not progress. Each agent posts one reply: its answer, or a question when it needs your input. Sinatra adds its own notices, such as errors and refusals.\n\nEach entry's `role` and `kind` say what it is:\n\n- `user` and `message`: a message a person sent. `messageId` is its idempotency key, or a generated id.\n- `agent` and `response`: the agent's answer.\n- `agent` and `clarify`: a question the agent needs answered to continue.\n- `platform` and `response` or `error`: a message from Sinatra itself, such as a refusal, an error, a stop, or files the agent produced.\n\nWhen `next` isn't `null`, more entries follow: pass `next` as `after` to get the next page.\n\nThere is no streaming. To wait for a reply, poll this endpoint with `after` set to the `id` of the last entry you read, and check the task's `status` with Get a task. The agent has handed back when the task stops working, for example when it reaches `replied` or `pr_open`. While a task is waiting for a running agent to finish, its conversation stays quiet; its `queued` field says so.",
         "parameters": [
           {
             "name": "workspaceId",
@@ -1607,7 +1607,7 @@
             ]
           },
           "model": {
-            "description": "A model from Sinatra's catalog, such as `anthropic/claude-opus-5-5` or `openai-codex/gpt-6.1-sol`, that every turn of the task runs on. The model picks its engine. Omit it to use the repository's or workspace's model.",
+            "description": "A model from Sinatra's catalog, such as `anthropic/claude-opus-5-5` or `openai-codex/gpt-6.1-sol`, that every agent on the task runs on. The model picks its engine. Omit it to use the repository's or workspace's model.",
             "anyOf": [
               {
                 "type": "string"
@@ -1750,11 +1750,11 @@
             "type": "string"
           },
           "running": {
-            "description": "How many tasks the plan runs at a time, on `capacity_full` when starting a task.",
+            "description": "How many agents the plan runs at a time, on `capacity_full` when starting a task.",
             "type": "integer"
           },
           "queued": {
-            "description": "How many tasks the plan queues, on `capacity_full` when starting a task.",
+            "description": "How many agents the plan lets wait, on `capacity_full` when starting a task.",
             "type": "integer"
           },
           "taskId": {
@@ -1854,7 +1854,7 @@
           },
           "kind": {
             "type": "string",
-            "description": "What it is: `message` (a person's message), `response` (the agent's answer for a turn, or a notice from Sinatra such as a stop or files the agent produced), `clarify` (a question the agent needs answered to continue) or `error` (a refusal or failure from Sinatra). New kinds can appear."
+            "description": "What it is: `message` (a person's message), `response` (the agent's answer, or a notice from Sinatra such as a stop or files the agent produced), `clarify` (a question the agent needs answered to continue) or `error` (a refusal or failure from Sinatra). New kinds can appear."
           },
           "body": {
             "type": "string",
@@ -1986,7 +1986,7 @@
           },
           "queued": {
             "type": "boolean",
-            "description": "`true` while a turn waits because the workspace is already running as many tasks at a time as its plan allows. The dashboard shows this as Queued."
+            "description": "`true` while the task's agent waits because the workspace is already running as many agents at a time as its plan allows. The dashboard shows this as Waiting."
           },
           "createdAt": {
             "type": "string",
