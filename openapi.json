@@ -3,7 +3,7 @@
   "info": {
     "title": "Sinatra API",
     "version": "1.0.0",
-    "description": "Start, follow and stop Sinatra tasks, and delegate Linear and GitHub issues. Send your token on every request as `Authorization: Bearer sntr_...`, or the access token the CLI's browser sign-in gets. Bodies are JSON. A workspace you don't belong to answers `404`, never `403`."
+    "description": "Start, follow and stop Sinatra tasks, delegate Linear and GitHub issues, and manage workspace access. Send your token on every request as `Authorization: Bearer sntr_...`, or the access token the CLI's browser sign-in gets. Bodies are JSON. A workspace you don't belong to answers `404`, never `403`."
   },
   "servers": [
     {
@@ -21,6 +21,10 @@
       "description": "The token and who it acts as."
     },
     {
+      "name": "Workspaces",
+      "description": "Read workspace integration, repository, plan and model settings."
+    },
+    {
       "name": "Tasks",
       "description": "Start, read and stop tasks."
     },
@@ -31,9 +35,1789 @@
     {
       "name": "Tickets",
       "description": "Find and delegate Linear and GitHub issues."
+    },
+    {
+      "name": "Access",
+      "description": "Manage workspace invitations, access requests, membership and ownership."
     }
   ],
   "paths": {
+    "/v1/workspaces/{workspaceId}/access": {
+      "get": {
+        "operationId": "workspaceAccess.list",
+        "tags": [
+          "Access"
+        ],
+        "summary": "List workspace access",
+        "description": "Owner only. Lists members, recent access requests and invitations. Invitation tokens and redemption secrets are never returned.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workspace's access state.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceAccess"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only a current workspace owner can manage workspace access.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspaceId}/invites": {
+      "post": {
+        "operationId": "workspaceAccess.createInvite",
+        "tags": [
+          "Access"
+        ],
+        "summary": "Invite a workspace member",
+        "description": "Owner only. Saves an email invitation and sends the same invitation email as the dashboard. Grant member or admin, never owner.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceInviteCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The invitation's public metadata.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceInviteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.\n- `illegal_role`: Only member or admin can be granted. Owners cannot be demoted, removed or leave; transfer ownership instead.\n- `invalid_body`: Send a valid email and role member or admin.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only a current workspace owner can manage workspace access.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict. The `error` code says which:\n\n- `already_member`: The invited user is already a workspace member.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.\n- `invite_limit`: The workspace or inviter has reached the daily limit for new invitation addresses.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Unavailable. The `error` code says which:\n\n- `invite_delivery_failed`: The invitation was saved, but email delivery failed. Resend the invitation to retry.\n- `unavailable`: Invitation email delivery is unavailable.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspaceId}/invites/{inviteId}/resend": {
+      "post": {
+        "operationId": "workspaceAccess.resendInvite",
+        "tags": [
+          "Access"
+        ],
+        "summary": "Resend an invitation",
+        "description": "Owner only. Refreshes and resends an existing invitation using the dashboard's email flow.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "inviteId",
+            "in": "path",
+            "required": true,
+            "description": "The invitation's id, from the workspace access snapshot.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The refreshed invitation's public metadata.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceInviteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.\n- `illegal_role`: Only member or admin can be granted. Owners cannot be demoted, removed or leave; transfer ownership instead.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only a current workspace owner can manage workspace access.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `invite_not_found`: No such invitation in this workspace.\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict. The `error` code says which:\n\n- `already_member`: The invited user is already a workspace member.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.\n- `invite_limit`: The workspace or inviter has reached the daily limit for new invitation addresses.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Unavailable. The `error` code says which:\n\n- `invite_delivery_failed`: The invitation was saved, but email delivery failed. Resend the invitation to retry.\n- `unavailable`: Invitation email delivery is unavailable.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspaceId}/invites/{inviteId}": {
+      "delete": {
+        "operationId": "workspaceAccess.revokeInvite",
+        "tags": [
+          "Access"
+        ],
+        "summary": "Revoke an invitation",
+        "description": "Owner only. Revokes an outstanding invitation in this workspace.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "inviteId",
+            "in": "path",
+            "required": true,
+            "description": "The invitation's id, from the workspace access snapshot.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The invitation was revoked.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceAccessOk"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only a current workspace owner can manage workspace access.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `invite_not_found`: No such invitation in this workspace.\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Gone. The `error` code says which:\n\n- `consumed`: The invitation has already been accepted.\n- `declined`: The invitation has been declined.\n- `expired`: The invitation has expired.\n- `invite_revoked`: The invitation has been revoked.\n- `revoked`: The invitation has already been revoked.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspaceId}/access-requests/{requestId}/approve": {
+      "post": {
+        "operationId": "workspaceAccess.approveRequest",
+        "tags": [
+          "Access"
+        ],
+        "summary": "Approve an access request",
+        "description": "Owner only. Approves a pending access request and grants member or admin.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "description": "The access request's id, from the workspace access snapshot.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceGrantRoleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The reviewed request and granted membership.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceAccessApproved"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.\n- `illegal_role`: Only member or admin can be granted. Owners cannot be demoted, removed or leave; transfer ownership instead.\n- `invalid_body`: Send role member or admin.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only a current workspace owner can manage workspace access.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.\n- `request_not_found`: No such access request in this workspace.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict. The `error` code says which:\n\n- `request_not_pending`: The access request has already been reviewed.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspaceId}/access-requests/{requestId}/deny": {
+      "post": {
+        "operationId": "workspaceAccess.denyRequest",
+        "tags": [
+          "Access"
+        ],
+        "summary": "Deny an access request",
+        "description": "Owner only. Denies a pending access request.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "description": "The access request's id, from the workspace access snapshot.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The denied request.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceAccessDenied"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only a current workspace owner can manage workspace access.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.\n- `request_not_found`: No such access request in this workspace.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict. The `error` code says which:\n\n- `request_not_pending`: The access request has already been reviewed.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspaceId}/memberships/{membershipId}": {
+      "patch": {
+        "operationId": "workspaceAccess.setRole",
+        "tags": [
+          "Access"
+        ],
+        "summary": "Change a member's role",
+        "description": "Owner only. Sets a non-owner's role to member or admin. An owner cannot be demoted through this endpoint.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "membershipId",
+            "in": "path",
+            "required": true,
+            "description": "The membership's id, from the workspace access snapshot.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceGrantRoleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated membership.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceMembershipResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.\n- `illegal_role`: Only member or admin can be granted. Owners cannot be demoted, removed or leave; transfer ownership instead.\n- `invalid_body`: Send role member or admin.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only a current workspace owner can manage workspace access.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `membership_not_found`: No such membership in this workspace.\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "workspaceAccess.removeMember",
+        "tags": [
+          "Access"
+        ],
+        "summary": "Remove a workspace member",
+        "description": "Owner only. Removes a non-owner membership. Owners cannot be removed.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "membershipId",
+            "in": "path",
+            "required": true,
+            "description": "The membership's id, from the workspace access snapshot.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The member was removed.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceAccessOk"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.\n- `illegal_role`: Only member or admin can be granted. Owners cannot be demoted, removed or leave; transfer ownership instead.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only a current workspace owner can manage workspace access.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `membership_not_found`: No such membership in this workspace.\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspaceId}/memberships/{membershipId}/transfer": {
+      "post": {
+        "operationId": "workspaceAccess.transferOwner",
+        "tags": [
+          "Access"
+        ],
+        "summary": "Transfer workspace ownership",
+        "description": "Owner only. Atomically promotes the target member to owner and demotes the caller to admin. The target must be a different non-owner member.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "membershipId",
+            "in": "path",
+            "required": true,
+            "description": "The membership's id, from the workspace access snapshot.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The former and new owner's memberships.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceOwnershipTransferred"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.\n- `illegal_role`: Only member or admin can be granted. Owners cannot be demoted, removed or leave; transfer ownership instead.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only a current workspace owner can manage workspace access.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `membership_not_found`: No such membership in this workspace.\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspaceId}/leave": {
+      "post": {
+        "operationId": "workspaceAccess.leave",
+        "tags": [
+          "Access"
+        ],
+        "summary": "Leave a workspace",
+        "description": "Any non-owner member can leave. Owners must transfer ownership before leaving.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The caller left the workspace.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceAccessOk"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.\n- `illegal_role`: Only member or admin can be granted. Owners cannot be demoted, removed or leave; transfer ownership instead.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `membership_not_found`: No such membership in this workspace.\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/me": {
       "get": {
         "operationId": "me.get",
@@ -77,7 +1861,428 @@
             }
           },
           "429": {
-            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspaceId}": {
+      "get": {
+        "operationId": "workspaces.get",
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Get a workspace overview",
+        "description": "Returns the workspace's dashboard-visible integration state, connected repository catalog, plan status and saved model default, including your role and your own linked integration identity. Any current workspace member can read it. This is read-only: it doesn't reconcile repositories, refresh provider tokens or expose credentials. Unknown workspaces and workspaces you don't belong to both answer `404 not_found`.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The member-visible workspace overview.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceOverview"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/account": {
+      "get": {
+        "operationId": "me.getAccount",
+        "tags": [
+          "Me"
+        ],
+        "summary": "Read your account",
+        "description": "Combines your dashboard profile, memberships and linked accounts. Only dashboard-visible fields are returned; credentials, session metadata and hidden provider identities are omitted. No workspace membership is required; this always reads the token's user, never another user.",
+        "responses": {
+          "200": {
+            "description": "Your account and linked identities.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/email-preferences": {
+      "get": {
+        "operationId": "me.getEmailPreferences",
+        "tags": [
+          "Me"
+        ],
+        "summary": "Read your email preferences",
+        "description": "Reads the token user's setup reminders and task alerts preferences. These settings apply across all of your workspaces and use the same store as the signed email-preferences page. No workspace membership is required.",
+        "responses": {
+          "200": {
+            "description": "Your account-wide email preferences.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailPreferences"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: The authenticated user's account could not be found.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "me.updateEmailPreferences",
+        "tags": [
+          "Me"
+        ],
+        "summary": "Change your email preferences",
+        "description": "Sets at least one of setupReminders or taskAlerts, as JSON booleans. Omitted categories stay unchanged. true subscribes and false opts out. No workspace membership is required. Only the token user's preferences can be changed. The signed email-preferences page reads and writes the same settings.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmailPreferencesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Your saved preferences, including the unchanged category.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailPreferences"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.\n- `invalid_body`: Send at least one of `setupReminders` or `taskAlerts` as a boolean. Other fields, including workspace and user targets, are refused.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: The authenticated user's account could not be found.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -193,7 +2398,7 @@
             }
           },
           "429": {
-            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -342,7 +2547,7 @@
             }
           },
           "429": {
-            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -517,7 +2722,7 @@
             }
           },
           "429": {
-            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -645,7 +2850,7 @@
             }
           },
           "429": {
-            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -818,7 +3023,7 @@
             }
           },
           "429": {
-            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -1019,7 +3224,7 @@
             }
           },
           "429": {
-            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -1196,7 +3401,7 @@
             }
           },
           "429": {
-            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -1318,7 +3523,7 @@
             }
           },
           "429": {
-            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -1507,7 +3712,7 @@
             }
           },
           "429": {
-            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 write requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -1545,6 +3750,331 @@
   },
   "components": {
     "schemas": {
+      "Account": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "githubLogin": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "avatarUrl": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "linearUserId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "email",
+              "githubLogin",
+              "name",
+              "avatarUrl",
+              "linearUserId"
+            ],
+            "description": "Your dashboard-visible account identity. Credentials and session metadata are never returned."
+          },
+          "memberships": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "membership": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "workspaceId": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "workspaceId",
+                    "role"
+                  ]
+                },
+                "workspace": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "githubAccountLogin": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "githubAccountType": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "linearOrganizationName": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "createdAt",
+                    "githubAccountLogin",
+                    "githubAccountType",
+                    "linearOrganizationName"
+                  ]
+                }
+              },
+              "required": [
+                "membership",
+                "workspace"
+              ]
+            },
+            "description": "Your memberships and dashboard workspace summaries, ordered by workspace name."
+          },
+          "linkedAccounts": {
+            "type": "object",
+            "properties": {
+              "telegram": {
+                "type": "object",
+                "properties": {
+                  "available": {
+                    "type": "boolean"
+                  },
+                  "identity": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "telegramUserId": {
+                            "type": "string"
+                          },
+                          "displayName": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "linkedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "telegramUserId",
+                          "displayName",
+                          "linkedAt"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "requestWorkspaces": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "options": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "name"
+                              ]
+                            }
+                          },
+                          "current": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "usable": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "usable"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "routesTo": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "options",
+                          "current",
+                          "routesTo"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "bot": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "username": {
+                            "type": "string"
+                          },
+                          "url": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "username",
+                          "url"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "available",
+                  "identity",
+                  "requestWorkspaces",
+                  "bot"
+                ],
+                "description": "Telegram's dashboard-visible account state. Identity, routing and bot are null when unavailable."
+              }
+            },
+            "required": [
+              "telegram"
+            ]
+          }
+        },
+        "required": [
+          "user",
+          "memberships",
+          "linkedAccounts"
+        ],
+        "description": "Your own account, combining the dashboard's profile and linked accounts. The workspace path checks membership; the account belongs to the token's user, not the workspace owner."
+      },
       "CreateMessageRequest": {
         "type": "object",
         "properties": {
@@ -1718,12 +4248,30 @@
         ],
         "description": "The issue was delegated."
       },
+      "EmailPreferences": {
+        "type": "object",
+        "properties": {
+          "setupReminders": {
+            "type": "boolean",
+            "description": "Whether Sinatra may send you setup reminder emails."
+          },
+          "taskAlerts": {
+            "type": "boolean",
+            "description": "Whether Sinatra may send you task alert emails."
+          }
+        },
+        "required": [
+          "setupReminders",
+          "taskAlerts"
+        ],
+        "description": "Your account-wide email preferences, shared with the signed email-preferences page."
+      },
       "Error": {
         "type": "object",
         "properties": {
           "error": {
             "type": "string",
-            "description": "A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `assigned_to_other`, `bad_request`, `capacity_full`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `internal_error`, `invalid_body`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_model`, `invalid_prompt`, `invalid_repo`, `invalid_status`, `invalid_title`, `invalid_token`, `issue_closed`, `issue_not_found`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `not_an_api_task`, `not_an_issue`, `not_found`, `not_running`, `payment_required`, `repo_disabled`, `unavailable`."
+            "description": "A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `actor_not_authorized`, `already_member`, `assigned_to_other`, `bad_request`, `capacity_full`, `consumed`, `declined`, `expired`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_model`, `invalid_prompt`, `invalid_repo`, `invalid_status`, `invalid_title`, `invalid_token`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `not_an_api_task`, `not_an_issue`, `not_found`, `not_running`, `payment_required`, `repo_disabled`, `request_not_found`, `request_not_pending`, `revoked`, `unavailable`."
           },
           "reason": {
             "description": "A sentence saying what went wrong and, where it helps, what to do. Written to show to a person.",
@@ -2197,6 +4745,41 @@
         ],
         "description": "The issues you could delegate, and how the workspace is connected to each tracker."
       },
+      "UpdateEmailPreferencesRequest": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "setupReminders": {
+                "type": "boolean"
+              },
+              "taskAlerts": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "setupReminders"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "setupReminders": {
+                "type": "boolean"
+              },
+              "taskAlerts": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "taskAlerts"
+            ],
+            "additionalProperties": false
+          }
+        ],
+        "description": "Set at least one boolean. Omitted categories are unchanged; these preferences belong to you across all your workspaces."
+      },
       "Workspace": {
         "type": "object",
         "properties": {
@@ -2219,6 +4802,976 @@
           "role"
         ],
         "description": "A workspace you belong to."
+      },
+      "WorkspaceAccess": {
+        "type": "object",
+        "properties": {
+          "memberships": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "githubLogin": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "avatarUrl": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "githubLogin",
+                    "avatarUrl"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "role",
+                "createdAt",
+                "user"
+              ]
+            }
+          },
+          "accessRequests": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
+                },
+                "requestedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "reviewedAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "assignedRole": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "requester": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "githubLogin": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "avatarUrl": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "githubLogin",
+                    "avatarUrl"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "state",
+                "requestedAt",
+                "reviewedAt",
+                "assignedRole",
+                "requester"
+              ]
+            }
+          },
+          "invites": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceInvite"
+            }
+          }
+        },
+        "required": [
+          "memberships",
+          "accessRequests",
+          "invites"
+        ]
+      },
+      "WorkspaceAccessApproved": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "assignedRole": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "state",
+              "assignedRole"
+            ]
+          },
+          "membership": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "role"
+            ]
+          }
+        },
+        "required": [
+          "request",
+          "membership"
+        ]
+      },
+      "WorkspaceAccessDenied": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "state"
+            ]
+          }
+        },
+        "required": [
+          "request"
+        ]
+      },
+      "WorkspaceAccessOk": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "ok"
+        ]
+      },
+      "WorkspaceGrantRoleRequest": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "member",
+              "admin"
+            ],
+            "description": "The role to grant. Ownership can only be transferred, never granted."
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "WorkspaceInvite": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "active, revoked, expired, consumed or declined."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revokedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "declinedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "acceptedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "role",
+          "status",
+          "expiresAt",
+          "revokedAt",
+          "declinedAt",
+          "acceptedAt",
+          "createdAt"
+        ],
+        "description": "An invitation's public metadata. No invitation token or redemption secret is returned."
+      },
+      "WorkspaceInviteCreateRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "member",
+              "admin"
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "role"
+        ]
+      },
+      "WorkspaceInviteResponse": {
+        "type": "object",
+        "properties": {
+          "invite": {
+            "$ref": "#/components/schemas/WorkspaceInvite"
+          }
+        },
+        "required": [
+          "invite"
+        ]
+      },
+      "WorkspaceMembershipResponse": {
+        "type": "object",
+        "properties": {
+          "membership": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "role"
+            ]
+          }
+        },
+        "required": [
+          "membership"
+        ]
+      },
+      "WorkspaceOverview": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The workspace's id. Use it as `workspaceId` in the workspace endpoints."
+          },
+          "name": {
+            "type": "string",
+            "description": "The workspace's name."
+          },
+          "role": {
+            "type": "string",
+            "description": "Your role in it: `owner`, `admin` or `member`. New roles can appear."
+          },
+          "repoEnvironmentsStage": {
+            "type": "string",
+            "description": "Repository environments rollout stage: `off`, `prepare` or `live`."
+          },
+          "repoEnvironmentsEnabled": {
+            "type": "boolean"
+          },
+          "github": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "description": "`connected` or `not_connected`."
+              },
+              "accountLogin": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "accountType": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "installationId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "GitHub installation id as a decimal string."
+              }
+            },
+            "required": [
+              "status",
+              "accountLogin",
+              "accountType",
+              "installationId"
+            ]
+          },
+          "linear": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "description": "`connected` or `not_connected`."
+              },
+              "organizationName": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "organizationUrlKey": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "currentUserHasReadToken": {
+                "type": "boolean"
+              },
+              "needsReconnect": {
+                "type": "boolean"
+              },
+              "recentTeams": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "taskCount": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "taskCount"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "status",
+              "organizationName",
+              "organizationUrlKey",
+              "currentUserHasReadToken",
+              "needsReconnect",
+              "recentTeams"
+            ]
+          },
+          "slack": {
+            "type": "object",
+            "properties": {
+              "available": {
+                "type": "boolean"
+              },
+              "status": {
+                "type": "string",
+                "description": "`connected`, `inactive` or `not_connected`."
+              },
+              "teamName": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "allowExternalSharedChannels": {
+                "type": "boolean"
+              },
+              "identity": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "slackUserId": {
+                        "type": "string"
+                      },
+                      "displayName": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "slackUserId",
+                      "displayName"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "available",
+              "status",
+              "teamName",
+              "allowExternalSharedChannels",
+              "identity"
+            ]
+          },
+          "telegram": {
+            "type": "object",
+            "properties": {
+              "available": {
+                "type": "boolean"
+              },
+              "enabled": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "available",
+              "enabled"
+            ]
+          },
+          "repos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Connected repository in `owner/name` form."
+                },
+                "shortDescription": {
+                  "type": "string"
+                },
+                "primaryLanguage": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "stack": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "preprocessing": {
+                  "type": "object",
+                  "properties": {
+                    "overallStatus": {
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string"
+                        },
+                        "error": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "error"
+                      ]
+                    },
+                    "label": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string"
+                        },
+                        "error": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "error"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "overallStatus",
+                    "metadata",
+                    "label"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "shortDescription",
+                "primaryLanguage",
+                "stack",
+                "preprocessing"
+              ]
+            }
+          },
+          "repoCatalog": {
+            "type": "string",
+            "description": "`none` without GitHub, `syncing` before its catalog is published, `ready` once published, or `suspended`. An empty repository list while syncing doesn't mean there are no connected repositories."
+          },
+          "planStatus": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "plan": {
+                    "type": "string",
+                    "const": "enterprise"
+                  }
+                },
+                "required": [
+                  "plan"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "plan": {
+                    "type": "string",
+                    "const": "monthly"
+                  },
+                  "byokConfigured": {
+                    "type": "boolean",
+                    "description": "Whether your model credentials or a workspace key are configured."
+                  },
+                  "capacity": {
+                    "type": "object",
+                    "properties": {
+                      "plan": {
+                        "type": "string"
+                      },
+                      "running": {
+                        "type": "integer"
+                      },
+                      "queued": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "plan",
+                      "running",
+                      "queued"
+                    ]
+                  },
+                  "capacityCatalog": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "plan": {
+                          "type": "string"
+                        },
+                        "running": {
+                          "type": "integer"
+                        },
+                        "queued": {
+                          "type": "integer"
+                        },
+                        "priceUsd": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "plan",
+                        "running",
+                        "queued",
+                        "priceUsd"
+                      ]
+                    }
+                  },
+                  "subscription": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          },
+                          "currentPeriodEnd": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "trialEndsAt": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "pastDueSinceAt": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "cancelAtPeriodEnd": {
+                            "type": "boolean"
+                          },
+                          "endsAt": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "actionRequiredHostedInvoiceUrl": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "capacityPlan": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "status",
+                          "currentPeriodEnd",
+                          "trialEndsAt",
+                          "pastDueSinceAt",
+                          "cancelAtPeriodEnd",
+                          "endsAt",
+                          "actionRequiredHostedInvoiceUrl",
+                          "capacityPlan"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "plan",
+                  "byokConfigured",
+                  "capacity",
+                  "capacityCatalog",
+                  "subscription"
+                ]
+              }
+            ]
+          },
+          "defaultModel": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "engine": {
+                    "type": "string"
+                  },
+                  "model": {
+                    "type": "string"
+                  },
+                  "effort": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "engine",
+                  "model"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The workspace's saved model default, or null when unset. Personal and repository overrides aren't included."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "role",
+          "repoEnvironmentsStage",
+          "repoEnvironmentsEnabled",
+          "github",
+          "linear",
+          "slack",
+          "telegram",
+          "repos",
+          "repoCatalog",
+          "planStatus",
+          "defaultModel"
+        ],
+        "description": "Read-only workspace overview, with the same member-visible data as the dashboard. No credentials or tokens."
+      },
+      "WorkspaceOwnershipTransferred": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "role"
+            ]
+          },
+          "to": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "role"
+            ]
+          }
+        },
+        "required": [
+          "from",
+          "to"
+        ]
       }
     },
     "parameters": {

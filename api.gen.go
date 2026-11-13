@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/oapi-codegen/runtime"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // Defines values for DelegateGithubTicketSource.
@@ -74,6 +75,148 @@ func (e StopTaskResponseAccepted) Valid() bool {
 	default:
 		return false
 	}
+}
+
+// Defines values for WorkspaceAccessOkOk.
+const (
+	WorkspaceAccessOkOkTrue WorkspaceAccessOkOk = true
+)
+
+// Valid indicates whether the value is a known member of the WorkspaceAccessOkOk enum.
+func (e WorkspaceAccessOkOk) Valid() bool {
+	switch e {
+	case WorkspaceAccessOkOkTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WorkspaceGrantRoleRequestRole.
+const (
+	WorkspaceGrantRoleRequestRoleAdmin  WorkspaceGrantRoleRequestRole = "admin"
+	WorkspaceGrantRoleRequestRoleMember WorkspaceGrantRoleRequestRole = "member"
+)
+
+// Valid indicates whether the value is a known member of the WorkspaceGrantRoleRequestRole enum.
+func (e WorkspaceGrantRoleRequestRole) Valid() bool {
+	switch e {
+	case WorkspaceGrantRoleRequestRoleAdmin:
+		return true
+	case WorkspaceGrantRoleRequestRoleMember:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WorkspaceInviteCreateRequestRole.
+const (
+	WorkspaceInviteCreateRequestRoleAdmin  WorkspaceInviteCreateRequestRole = "admin"
+	WorkspaceInviteCreateRequestRoleMember WorkspaceInviteCreateRequestRole = "member"
+)
+
+// Valid indicates whether the value is a known member of the WorkspaceInviteCreateRequestRole enum.
+func (e WorkspaceInviteCreateRequestRole) Valid() bool {
+	switch e {
+	case WorkspaceInviteCreateRequestRoleAdmin:
+		return true
+	case WorkspaceInviteCreateRequestRoleMember:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WorkspaceOverviewPlanStatus0Plan.
+const (
+	WorkspaceOverviewPlanStatus0PlanEnterprise WorkspaceOverviewPlanStatus0Plan = "enterprise"
+)
+
+// Valid indicates whether the value is a known member of the WorkspaceOverviewPlanStatus0Plan enum.
+func (e WorkspaceOverviewPlanStatus0Plan) Valid() bool {
+	switch e {
+	case WorkspaceOverviewPlanStatus0PlanEnterprise:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WorkspaceOverviewPlanStatus1Plan.
+const (
+	WorkspaceOverviewPlanStatus1PlanMonthly WorkspaceOverviewPlanStatus1Plan = "monthly"
+)
+
+// Valid indicates whether the value is a known member of the WorkspaceOverviewPlanStatus1Plan enum.
+func (e WorkspaceOverviewPlanStatus1Plan) Valid() bool {
+	switch e {
+	case WorkspaceOverviewPlanStatus1PlanMonthly:
+		return true
+	default:
+		return false
+	}
+}
+
+// Account Your own account, combining the dashboard's profile and linked accounts. The workspace path checks membership; the account belongs to the token's user, not the workspace owner.
+type Account struct {
+	LinkedAccounts struct {
+		// Telegram Telegram's dashboard-visible account state. Identity, routing and bot are null when unavailable.
+		Telegram struct {
+			Available bool `json:"available"`
+			Bot       *struct {
+				Url      string `json:"url"`
+				Username string `json:"username"`
+			} `json:"bot"`
+			Identity *struct {
+				DisplayName    *string   `json:"displayName"`
+				LinkedAt       time.Time `json:"linkedAt"`
+				TelegramUserId string    `json:"telegramUserId"`
+			} `json:"identity"`
+			RequestWorkspaces *struct {
+				Current *struct {
+					Id     string  `json:"id"`
+					Name   *string `json:"name"`
+					Usable bool    `json:"usable"`
+				} `json:"current"`
+				Options []struct {
+					Id   string `json:"id"`
+					Name string `json:"name"`
+				} `json:"options"`
+				RoutesTo *struct {
+					Id   string `json:"id"`
+					Name string `json:"name"`
+				} `json:"routesTo"`
+			} `json:"requestWorkspaces"`
+		} `json:"telegram"`
+	} `json:"linkedAccounts"`
+
+	// Memberships Your memberships and dashboard workspace summaries, ordered by workspace name.
+	Memberships []struct {
+		Membership struct {
+			Id          string `json:"id"`
+			Role        string `json:"role"`
+			WorkspaceId string `json:"workspaceId"`
+		} `json:"membership"`
+		Workspace struct {
+			CreatedAt              time.Time `json:"createdAt"`
+			GithubAccountLogin     *string   `json:"githubAccountLogin"`
+			GithubAccountType      *string   `json:"githubAccountType"`
+			Id                     string    `json:"id"`
+			LinearOrganizationName *string   `json:"linearOrganizationName"`
+			Name                   string    `json:"name"`
+		} `json:"workspace"`
+	} `json:"memberships"`
+
+	// User Your dashboard-visible account identity. Credentials and session metadata are never returned.
+	User struct {
+		AvatarUrl    *string `json:"avatarUrl"`
+		Email        string  `json:"email"`
+		GithubLogin  *string `json:"githubLogin"`
+		Id           string  `json:"id"`
+		LinearUserId *string `json:"linearUserId"`
+		Name         *string `json:"name"`
+	} `json:"user"`
 }
 
 // CreateMessageRequest A message to send on a task.
@@ -153,12 +296,21 @@ type DelegateTicketResponse struct {
 // DelegateTicketResponseOk Always `true`: the issue was handed to Sinatra.
 type DelegateTicketResponseOk bool
 
+// EmailPreferences Your account-wide email preferences, shared with the signed email-preferences page.
+type EmailPreferences struct {
+	// SetupReminders Whether Sinatra may send you setup reminder emails.
+	SetupReminders bool `json:"setupReminders"`
+
+	// TaskAlerts Whether Sinatra may send you task alert emails.
+	TaskAlerts bool `json:"taskAlerts"`
+}
+
 // ErrorBody The body of every error response.
 type ErrorBody struct {
 	// BillingUrl The settings section that fixes the refusal: your model credentials or billing, on `payment_required`; billing, when starting a task, on `capacity_full`.
 	BillingUrl *string `json:"billingUrl,omitempty"`
 
-	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `assigned_to_other`, `bad_request`, `capacity_full`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `internal_error`, `invalid_body`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_model`, `invalid_prompt`, `invalid_repo`, `invalid_status`, `invalid_title`, `invalid_token`, `issue_closed`, `issue_not_found`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `not_an_api_task`, `not_an_issue`, `not_found`, `not_running`, `payment_required`, `repo_disabled`, `unavailable`.
+	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `actor_not_authorized`, `already_member`, `assigned_to_other`, `bad_request`, `capacity_full`, `consumed`, `declined`, `expired`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_model`, `invalid_prompt`, `invalid_repo`, `invalid_status`, `invalid_title`, `invalid_token`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `not_an_api_task`, `not_an_issue`, `not_found`, `not_running`, `payment_required`, `repo_disabled`, `request_not_found`, `request_not_pending`, `revoked`, `unavailable`.
 	Error string `json:"error"`
 
 	// MessageId On `unavailable`: the message that was saved but not sent yet. Retry with it as the `Idempotency-Key`.
@@ -360,6 +512,23 @@ type TicketSearchResult struct {
 	Tickets []Ticket `json:"tickets"`
 }
 
+// UpdateEmailPreferencesRequest Set at least one boolean. Omitted categories are unchanged; these preferences belong to you across all your workspaces.
+type UpdateEmailPreferencesRequest struct {
+	union json.RawMessage
+}
+
+// UpdateEmailPreferencesRequest0 defines model for UpdateEmailPreferencesRequest.0.
+type UpdateEmailPreferencesRequest0 struct {
+	SetupReminders bool  `json:"setupReminders"`
+	TaskAlerts     *bool `json:"taskAlerts,omitempty"`
+}
+
+// UpdateEmailPreferencesRequest1 defines model for UpdateEmailPreferencesRequest.1.
+type UpdateEmailPreferencesRequest1 struct {
+	SetupReminders *bool `json:"setupReminders,omitempty"`
+	TaskAlerts     bool  `json:"taskAlerts"`
+}
+
 // Workspace A workspace you belong to.
 type Workspace struct {
 	// Id The workspace's id. Use it as `workspaceId` in the workspace endpoints.
@@ -370,6 +539,253 @@ type Workspace struct {
 
 	// Role Your role in it: `owner`, `admin` or `member`. New roles can appear.
 	Role string `json:"role"`
+}
+
+// WorkspaceAccess defines model for WorkspaceAccess.
+type WorkspaceAccess struct {
+	AccessRequests []struct {
+		AssignedRole *string   `json:"assignedRole"`
+		Id           string    `json:"id"`
+		RequestedAt  time.Time `json:"requestedAt"`
+		Requester    struct {
+			AvatarUrl   *string `json:"avatarUrl"`
+			GithubLogin *string `json:"githubLogin"`
+			Id          string  `json:"id"`
+			Name        *string `json:"name"`
+		} `json:"requester"`
+		ReviewedAt *time.Time `json:"reviewedAt"`
+		State      string     `json:"state"`
+	} `json:"accessRequests"`
+	Invites     []WorkspaceInvite `json:"invites"`
+	Memberships []struct {
+		CreatedAt time.Time `json:"createdAt"`
+		Id        string    `json:"id"`
+		Role      string    `json:"role"`
+		User      struct {
+			AvatarUrl   *string `json:"avatarUrl"`
+			GithubLogin *string `json:"githubLogin"`
+			Id          string  `json:"id"`
+			Name        *string `json:"name"`
+		} `json:"user"`
+	} `json:"memberships"`
+}
+
+// WorkspaceAccessApproved defines model for WorkspaceAccessApproved.
+type WorkspaceAccessApproved struct {
+	Membership struct {
+		Id   string `json:"id"`
+		Role string `json:"role"`
+	} `json:"membership"`
+	Request struct {
+		AssignedRole *string `json:"assignedRole"`
+		Id           string  `json:"id"`
+		State        string  `json:"state"`
+	} `json:"request"`
+}
+
+// WorkspaceAccessDenied defines model for WorkspaceAccessDenied.
+type WorkspaceAccessDenied struct {
+	Request struct {
+		Id    string `json:"id"`
+		State string `json:"state"`
+	} `json:"request"`
+}
+
+// WorkspaceAccessOk defines model for WorkspaceAccessOk.
+type WorkspaceAccessOk struct {
+	Ok WorkspaceAccessOkOk `json:"ok"`
+}
+
+// WorkspaceAccessOkOk defines model for WorkspaceAccessOk.Ok.
+type WorkspaceAccessOkOk bool
+
+// WorkspaceGrantRoleRequest defines model for WorkspaceGrantRoleRequest.
+type WorkspaceGrantRoleRequest struct {
+	// Role The role to grant. Ownership can only be transferred, never granted.
+	Role WorkspaceGrantRoleRequestRole `json:"role"`
+}
+
+// WorkspaceGrantRoleRequestRole The role to grant. Ownership can only be transferred, never granted.
+type WorkspaceGrantRoleRequestRole string
+
+// WorkspaceInvite An invitation's public metadata. No invitation token or redemption secret is returned.
+type WorkspaceInvite struct {
+	AcceptedAt *time.Time `json:"acceptedAt"`
+	CreatedAt  time.Time  `json:"createdAt"`
+	DeclinedAt *time.Time `json:"declinedAt"`
+	Email      string     `json:"email"`
+	ExpiresAt  time.Time  `json:"expiresAt"`
+	Id         string     `json:"id"`
+	RevokedAt  *time.Time `json:"revokedAt"`
+	Role       string     `json:"role"`
+
+	// Status active, revoked, expired, consumed or declined.
+	Status string `json:"status"`
+}
+
+// WorkspaceInviteCreateRequest defines model for WorkspaceInviteCreateRequest.
+type WorkspaceInviteCreateRequest struct {
+	Email openapi_types.Email              `json:"email"`
+	Role  WorkspaceInviteCreateRequestRole `json:"role"`
+}
+
+// WorkspaceInviteCreateRequestRole defines model for WorkspaceInviteCreateRequest.Role.
+type WorkspaceInviteCreateRequestRole string
+
+// WorkspaceInviteResponse defines model for WorkspaceInviteResponse.
+type WorkspaceInviteResponse struct {
+	// Invite An invitation's public metadata. No invitation token or redemption secret is returned.
+	Invite WorkspaceInvite `json:"invite"`
+}
+
+// WorkspaceMembershipResponse defines model for WorkspaceMembershipResponse.
+type WorkspaceMembershipResponse struct {
+	Membership struct {
+		Id   string `json:"id"`
+		Role string `json:"role"`
+	} `json:"membership"`
+}
+
+// WorkspaceOverview Read-only workspace overview, with the same member-visible data as the dashboard. No credentials or tokens.
+type WorkspaceOverview struct {
+	// DefaultModel The workspace's saved model default, or null when unset. Personal and repository overrides aren't included.
+	DefaultModel *struct {
+		Effort *string `json:"effort,omitempty"`
+		Engine string  `json:"engine"`
+		Model  string  `json:"model"`
+	} `json:"defaultModel"`
+	Github struct {
+		AccountLogin *string `json:"accountLogin"`
+		AccountType  *string `json:"accountType"`
+
+		// InstallationId GitHub installation id as a decimal string.
+		InstallationId *string `json:"installationId"`
+
+		// Status `connected` or `not_connected`.
+		Status string `json:"status"`
+	} `json:"github"`
+
+	// Id The workspace's id. Use it as `workspaceId` in the workspace endpoints.
+	Id     string `json:"id"`
+	Linear struct {
+		CurrentUserHasReadToken bool    `json:"currentUserHasReadToken"`
+		NeedsReconnect          bool    `json:"needsReconnect"`
+		OrganizationName        *string `json:"organizationName"`
+		OrganizationUrlKey      *string `json:"organizationUrlKey"`
+		RecentTeams             []struct {
+			Key       string `json:"key"`
+			TaskCount int    `json:"taskCount"`
+		} `json:"recentTeams"`
+
+		// Status `connected` or `not_connected`.
+		Status string `json:"status"`
+	} `json:"linear"`
+
+	// Name The workspace's name.
+	Name       string                       `json:"name"`
+	PlanStatus WorkspaceOverview_PlanStatus `json:"planStatus"`
+
+	// RepoCatalog `none` without GitHub, `syncing` before its catalog is published, `ready` once published, or `suspended`. An empty repository list while syncing doesn't mean there are no connected repositories.
+	RepoCatalog             string `json:"repoCatalog"`
+	RepoEnvironmentsEnabled bool   `json:"repoEnvironmentsEnabled"`
+
+	// RepoEnvironmentsStage Repository environments rollout stage: `off`, `prepare` or `live`.
+	RepoEnvironmentsStage string `json:"repoEnvironmentsStage"`
+	Repos                 []struct {
+		Id string `json:"id"`
+
+		// Name Connected repository in `owner/name` form.
+		Name          string `json:"name"`
+		Preprocessing struct {
+			Label struct {
+				Error  *string `json:"error"`
+				Status string  `json:"status"`
+			} `json:"label"`
+			Metadata struct {
+				Error  *string `json:"error"`
+				Status string  `json:"status"`
+			} `json:"metadata"`
+			OverallStatus string `json:"overallStatus"`
+		} `json:"preprocessing"`
+		PrimaryLanguage  *string `json:"primaryLanguage"`
+		ShortDescription string  `json:"shortDescription"`
+		Stack            *string `json:"stack"`
+	} `json:"repos"`
+
+	// Role Your role in it: `owner`, `admin` or `member`. New roles can appear.
+	Role  string `json:"role"`
+	Slack struct {
+		AllowExternalSharedChannels bool `json:"allowExternalSharedChannels"`
+		Available                   bool `json:"available"`
+		Identity                    *struct {
+			DisplayName *string `json:"displayName"`
+			SlackUserId string  `json:"slackUserId"`
+		} `json:"identity"`
+
+		// Status `connected`, `inactive` or `not_connected`.
+		Status   string  `json:"status"`
+		TeamName *string `json:"teamName"`
+	} `json:"slack"`
+	Telegram struct {
+		Available bool `json:"available"`
+		Enabled   bool `json:"enabled"`
+	} `json:"telegram"`
+}
+
+// WorkspaceOverviewPlanStatus0 defines model for WorkspaceOverview.PlanStatus.0.
+type WorkspaceOverviewPlanStatus0 struct {
+	Plan WorkspaceOverviewPlanStatus0Plan `json:"plan"`
+}
+
+// WorkspaceOverviewPlanStatus0Plan defines model for WorkspaceOverview.PlanStatus.0.Plan.
+type WorkspaceOverviewPlanStatus0Plan string
+
+// WorkspaceOverviewPlanStatus1 defines model for WorkspaceOverview.PlanStatus.1.
+type WorkspaceOverviewPlanStatus1 struct {
+	// ByokConfigured Whether your model credentials or a workspace key are configured.
+	ByokConfigured bool `json:"byokConfigured"`
+	Capacity       struct {
+		Plan    string `json:"plan"`
+		Queued  int    `json:"queued"`
+		Running int    `json:"running"`
+	} `json:"capacity"`
+	CapacityCatalog []struct {
+		Plan     string  `json:"plan"`
+		PriceUsd float32 `json:"priceUsd"`
+		Queued   int     `json:"queued"`
+		Running  int     `json:"running"`
+	} `json:"capacityCatalog"`
+	Plan         WorkspaceOverviewPlanStatus1Plan `json:"plan"`
+	Subscription *struct {
+		ActionRequiredHostedInvoiceUrl *string    `json:"actionRequiredHostedInvoiceUrl"`
+		CancelAtPeriodEnd              bool       `json:"cancelAtPeriodEnd"`
+		CapacityPlan                   *string    `json:"capacityPlan"`
+		CurrentPeriodEnd               *time.Time `json:"currentPeriodEnd"`
+		EndsAt                         *time.Time `json:"endsAt"`
+		PastDueSinceAt                 *time.Time `json:"pastDueSinceAt"`
+		Status                         string     `json:"status"`
+		TrialEndsAt                    *time.Time `json:"trialEndsAt"`
+	} `json:"subscription"`
+}
+
+// WorkspaceOverviewPlanStatus1Plan defines model for WorkspaceOverview.PlanStatus.1.Plan.
+type WorkspaceOverviewPlanStatus1Plan string
+
+// WorkspaceOverview_PlanStatus defines model for WorkspaceOverview.PlanStatus.
+type WorkspaceOverview_PlanStatus struct {
+	union json.RawMessage
+}
+
+// WorkspaceOwnershipTransferred defines model for WorkspaceOwnershipTransferred.
+type WorkspaceOwnershipTransferred struct {
+	From struct {
+		Id   string `json:"id"`
+		Role string `json:"role"`
+	} `json:"from"`
+	To struct {
+		Id   string `json:"id"`
+		Role string `json:"role"`
+	} `json:"to"`
 }
 
 // IdempotencyKey defines model for IdempotencyKey.
@@ -416,6 +832,18 @@ type TicketsSearchParams struct {
 	// Repo `owner/name` of an enabled repository to search first on GitHub. A repository that isn't enabled is ignored.
 	Repo *string `form:"repo,omitempty" json:"repo,omitempty"`
 }
+
+// MeUpdateEmailPreferencesJSONRequestBody defines body for MeUpdateEmailPreferences for application/json ContentType.
+type MeUpdateEmailPreferencesJSONRequestBody = UpdateEmailPreferencesRequest
+
+// WorkspaceAccessApproveRequestJSONRequestBody defines body for WorkspaceAccessApproveRequest for application/json ContentType.
+type WorkspaceAccessApproveRequestJSONRequestBody = WorkspaceGrantRoleRequest
+
+// WorkspaceAccessCreateInviteJSONRequestBody defines body for WorkspaceAccessCreateInvite for application/json ContentType.
+type WorkspaceAccessCreateInviteJSONRequestBody = WorkspaceInviteCreateRequest
+
+// WorkspaceAccessSetRoleJSONRequestBody defines body for WorkspaceAccessSetRole for application/json ContentType.
+type WorkspaceAccessSetRoleJSONRequestBody = WorkspaceGrantRoleRequest
 
 // TasksCreateJSONRequestBody defines body for TasksCreate for application/json ContentType.
 type TasksCreateJSONRequestBody = CreateTaskRequest
@@ -527,6 +955,130 @@ func (t *DelegateTicketRequest) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsUpdateEmailPreferencesRequest0 returns the union data inside the UpdateEmailPreferencesRequest as a UpdateEmailPreferencesRequest0
+func (t UpdateEmailPreferencesRequest) AsUpdateEmailPreferencesRequest0() (UpdateEmailPreferencesRequest0, error) {
+	var body UpdateEmailPreferencesRequest0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateEmailPreferencesRequest0 overwrites any union data inside the UpdateEmailPreferencesRequest as the provided UpdateEmailPreferencesRequest0
+func (t *UpdateEmailPreferencesRequest) FromUpdateEmailPreferencesRequest0(v UpdateEmailPreferencesRequest0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateEmailPreferencesRequest0 performs a merge with any union data inside the UpdateEmailPreferencesRequest, using the provided UpdateEmailPreferencesRequest0
+func (t *UpdateEmailPreferencesRequest) MergeUpdateEmailPreferencesRequest0(v UpdateEmailPreferencesRequest0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateEmailPreferencesRequest1 returns the union data inside the UpdateEmailPreferencesRequest as a UpdateEmailPreferencesRequest1
+func (t UpdateEmailPreferencesRequest) AsUpdateEmailPreferencesRequest1() (UpdateEmailPreferencesRequest1, error) {
+	var body UpdateEmailPreferencesRequest1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateEmailPreferencesRequest1 overwrites any union data inside the UpdateEmailPreferencesRequest as the provided UpdateEmailPreferencesRequest1
+func (t *UpdateEmailPreferencesRequest) FromUpdateEmailPreferencesRequest1(v UpdateEmailPreferencesRequest1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateEmailPreferencesRequest1 performs a merge with any union data inside the UpdateEmailPreferencesRequest, using the provided UpdateEmailPreferencesRequest1
+func (t *UpdateEmailPreferencesRequest) MergeUpdateEmailPreferencesRequest1(v UpdateEmailPreferencesRequest1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateEmailPreferencesRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateEmailPreferencesRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsWorkspaceOverviewPlanStatus0 returns the union data inside the WorkspaceOverview_PlanStatus as a WorkspaceOverviewPlanStatus0
+func (t WorkspaceOverview_PlanStatus) AsWorkspaceOverviewPlanStatus0() (WorkspaceOverviewPlanStatus0, error) {
+	var body WorkspaceOverviewPlanStatus0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromWorkspaceOverviewPlanStatus0 overwrites any union data inside the WorkspaceOverview_PlanStatus as the provided WorkspaceOverviewPlanStatus0
+func (t *WorkspaceOverview_PlanStatus) FromWorkspaceOverviewPlanStatus0(v WorkspaceOverviewPlanStatus0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeWorkspaceOverviewPlanStatus0 performs a merge with any union data inside the WorkspaceOverview_PlanStatus, using the provided WorkspaceOverviewPlanStatus0
+func (t *WorkspaceOverview_PlanStatus) MergeWorkspaceOverviewPlanStatus0(v WorkspaceOverviewPlanStatus0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsWorkspaceOverviewPlanStatus1 returns the union data inside the WorkspaceOverview_PlanStatus as a WorkspaceOverviewPlanStatus1
+func (t WorkspaceOverview_PlanStatus) AsWorkspaceOverviewPlanStatus1() (WorkspaceOverviewPlanStatus1, error) {
+	var body WorkspaceOverviewPlanStatus1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromWorkspaceOverviewPlanStatus1 overwrites any union data inside the WorkspaceOverview_PlanStatus as the provided WorkspaceOverviewPlanStatus1
+func (t *WorkspaceOverview_PlanStatus) FromWorkspaceOverviewPlanStatus1(v WorkspaceOverviewPlanStatus1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeWorkspaceOverviewPlanStatus1 performs a merge with any union data inside the WorkspaceOverview_PlanStatus, using the provided WorkspaceOverviewPlanStatus1
+func (t *WorkspaceOverview_PlanStatus) MergeWorkspaceOverviewPlanStatus1(v WorkspaceOverviewPlanStatus1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t WorkspaceOverview_PlanStatus) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *WorkspaceOverview_PlanStatus) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // newMeGetRequest constructs an http.Request for the MeGet method
 func newMeGetRequest(server string) (*http.Request, error) {
 	var err error
@@ -554,6 +1106,100 @@ func newMeGetRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// newMeGetAccountRequest constructs an http.Request for the MeGetAccount method
+func newMeGetAccountRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/me/account")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newMeGetEmailPreferencesRequest constructs an http.Request for the MeGetEmailPreferences method
+func newMeGetEmailPreferencesRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/me/email-preferences")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newMeUpdateEmailPreferencesRequest calls the generic MeUpdateEmailPreferences builder with application/json body
+func newMeUpdateEmailPreferencesRequest(server string, body MeUpdateEmailPreferencesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newMeUpdateEmailPreferencesRequestWithBody(server, "application/json", bodyReader)
+}
+
+// newMeUpdateEmailPreferencesRequestWithBody constructs an http.Request for the MeUpdateEmailPreferences method, with any body, and a specified content type
+func newMeUpdateEmailPreferencesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/me/email-preferences")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // newMeRevokeTokenRequest constructs an http.Request for the MeRevokeToken method
 func newMeRevokeTokenRequest(server string) (*http.Request, error) {
 	var err error
@@ -574,6 +1220,468 @@ func newMeRevokeTokenRequest(server string) (*http.Request, error) {
 	}
 
 	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newWorkspacesGetRequest constructs an http.Request for the WorkspacesGet method
+func newWorkspacesGetRequest(server string, workspaceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newWorkspaceAccessListRequest constructs an http.Request for the WorkspaceAccessList method
+func newWorkspaceAccessListRequest(server string, workspaceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/access", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newWorkspaceAccessApproveRequestRequest calls the generic WorkspaceAccessApproveRequest builder with application/json body
+func newWorkspaceAccessApproveRequestRequest(server string, workspaceId string, requestId string, body WorkspaceAccessApproveRequestJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newWorkspaceAccessApproveRequestRequestWithBody(server, workspaceId, requestId, "application/json", bodyReader)
+}
+
+// newWorkspaceAccessApproveRequestRequestWithBody constructs an http.Request for the WorkspaceAccessApproveRequest method, with any body, and a specified content type
+func newWorkspaceAccessApproveRequestRequestWithBody(server string, workspaceId string, requestId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "requestId", requestId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/access-requests/%s/approve", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newWorkspaceAccessDenyRequestRequest constructs an http.Request for the WorkspaceAccessDenyRequest method
+func newWorkspaceAccessDenyRequestRequest(server string, workspaceId string, requestId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "requestId", requestId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/access-requests/%s/deny", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newWorkspaceAccessCreateInviteRequest calls the generic WorkspaceAccessCreateInvite builder with application/json body
+func newWorkspaceAccessCreateInviteRequest(server string, workspaceId string, body WorkspaceAccessCreateInviteJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newWorkspaceAccessCreateInviteRequestWithBody(server, workspaceId, "application/json", bodyReader)
+}
+
+// newWorkspaceAccessCreateInviteRequestWithBody constructs an http.Request for the WorkspaceAccessCreateInvite method, with any body, and a specified content type
+func newWorkspaceAccessCreateInviteRequestWithBody(server string, workspaceId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/invites", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newWorkspaceAccessRevokeInviteRequest constructs an http.Request for the WorkspaceAccessRevokeInvite method
+func newWorkspaceAccessRevokeInviteRequest(server string, workspaceId string, inviteId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "inviteId", inviteId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/invites/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newWorkspaceAccessResendInviteRequest constructs an http.Request for the WorkspaceAccessResendInvite method
+func newWorkspaceAccessResendInviteRequest(server string, workspaceId string, inviteId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "inviteId", inviteId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/invites/%s/resend", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newWorkspaceAccessLeaveRequest constructs an http.Request for the WorkspaceAccessLeave method
+func newWorkspaceAccessLeaveRequest(server string, workspaceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/leave", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newWorkspaceAccessRemoveMemberRequest constructs an http.Request for the WorkspaceAccessRemoveMember method
+func newWorkspaceAccessRemoveMemberRequest(server string, workspaceId string, membershipId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "membershipId", membershipId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/memberships/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newWorkspaceAccessSetRoleRequest calls the generic WorkspaceAccessSetRole builder with application/json body
+func newWorkspaceAccessSetRoleRequest(server string, workspaceId string, membershipId string, body WorkspaceAccessSetRoleJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newWorkspaceAccessSetRoleRequestWithBody(server, workspaceId, membershipId, "application/json", bodyReader)
+}
+
+// newWorkspaceAccessSetRoleRequestWithBody constructs an http.Request for the WorkspaceAccessSetRole method, with any body, and a specified content type
+func newWorkspaceAccessSetRoleRequestWithBody(server string, workspaceId string, membershipId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "membershipId", membershipId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/memberships/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newWorkspaceAccessTransferOwnerRequest constructs an http.Request for the WorkspaceAccessTransferOwner method
+func newWorkspaceAccessTransferOwnerRequest(server string, workspaceId string, membershipId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "membershipId", membershipId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/memberships/%s/transfer", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
