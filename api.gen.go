@@ -17,6 +17,27 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for BillingCheckoutRequestPlan.
+const (
+	BillingCheckoutRequestPlanPro   BillingCheckoutRequestPlan = "pro"
+	BillingCheckoutRequestPlanScale BillingCheckoutRequestPlan = "scale"
+	BillingCheckoutRequestPlanTeam  BillingCheckoutRequestPlan = "team"
+)
+
+// Valid indicates whether the value is a known member of the BillingCheckoutRequestPlan enum.
+func (e BillingCheckoutRequestPlan) Valid() bool {
+	switch e {
+	case BillingCheckoutRequestPlanPro:
+		return true
+	case BillingCheckoutRequestPlanScale:
+		return true
+	case BillingCheckoutRequestPlanTeam:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for DelegateGithubTicketSource.
 const (
 	DelegateGithubTicketSourceGithub DelegateGithubTicketSource = "github"
@@ -128,30 +149,288 @@ func (e WorkspaceInviteCreateRequestRole) Valid() bool {
 	}
 }
 
-// Defines values for WorkspaceOverviewPlanStatus0Plan.
+// Defines values for WorkspaceModelKeyRequestProvider.
 const (
-	WorkspaceOverviewPlanStatus0PlanEnterprise WorkspaceOverviewPlanStatus0Plan = "enterprise"
+	WorkspaceModelKeyRequestProviderAnthropic  WorkspaceModelKeyRequestProvider = "anthropic"
+	WorkspaceModelKeyRequestProviderOpenrouter WorkspaceModelKeyRequestProvider = "openrouter"
 )
 
-// Valid indicates whether the value is a known member of the WorkspaceOverviewPlanStatus0Plan enum.
-func (e WorkspaceOverviewPlanStatus0Plan) Valid() bool {
+// Valid indicates whether the value is a known member of the WorkspaceModelKeyRequestProvider enum.
+func (e WorkspaceModelKeyRequestProvider) Valid() bool {
 	switch e {
-	case WorkspaceOverviewPlanStatus0PlanEnterprise:
+	case WorkspaceModelKeyRequestProviderAnthropic:
+		return true
+	case WorkspaceModelKeyRequestProviderOpenrouter:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for WorkspaceOverviewPlanStatus1Plan.
+// Defines values for WorkspacePlanStatus0Plan.
 const (
-	WorkspaceOverviewPlanStatus1PlanMonthly WorkspaceOverviewPlanStatus1Plan = "monthly"
+	WorkspacePlanStatus0PlanEnterprise WorkspacePlanStatus0Plan = "enterprise"
 )
 
-// Valid indicates whether the value is a known member of the WorkspaceOverviewPlanStatus1Plan enum.
-func (e WorkspaceOverviewPlanStatus1Plan) Valid() bool {
+// Valid indicates whether the value is a known member of the WorkspacePlanStatus0Plan enum.
+func (e WorkspacePlanStatus0Plan) Valid() bool {
 	switch e {
-	case WorkspaceOverviewPlanStatus1PlanMonthly:
+	case WorkspacePlanStatus0PlanEnterprise:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WorkspacePlanStatus1Plan.
+const (
+	WorkspacePlanStatus1PlanMonthly WorkspacePlanStatus1Plan = "monthly"
+)
+
+// Valid indicates whether the value is a known member of the WorkspacePlanStatus1Plan enum.
+func (e WorkspacePlanStatus1Plan) Valid() bool {
+	switch e {
+	case WorkspacePlanStatus1PlanMonthly:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubscriptionsComplete200Status.
+const (
+	SubscriptionsComplete200StatusConnected SubscriptionsComplete200Status = "connected"
+)
+
+// Valid indicates whether the value is a known member of the SubscriptionsComplete200Status enum.
+func (e SubscriptionsComplete200Status) Valid() bool {
+	switch e {
+	case SubscriptionsComplete200StatusConnected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubscriptionsList200ConnectionsProvider.
+const (
+	SubscriptionsList200ConnectionsProviderClaude SubscriptionsList200ConnectionsProvider = "claude"
+	SubscriptionsList200ConnectionsProviderCodex  SubscriptionsList200ConnectionsProvider = "codex"
+	SubscriptionsList200ConnectionsProviderCursor SubscriptionsList200ConnectionsProvider = "cursor"
+	SubscriptionsList200ConnectionsProviderXai    SubscriptionsList200ConnectionsProvider = "xai"
+)
+
+// Valid indicates whether the value is a known member of the SubscriptionsList200ConnectionsProvider enum.
+func (e SubscriptionsList200ConnectionsProvider) Valid() bool {
+	switch e {
+	case SubscriptionsList200ConnectionsProviderClaude:
+		return true
+	case SubscriptionsList200ConnectionsProviderCodex:
+		return true
+	case SubscriptionsList200ConnectionsProviderCursor:
+		return true
+	case SubscriptionsList200ConnectionsProviderXai:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubscriptionsPoll2000Status.
+const (
+	SubscriptionsPoll2000StatusPending SubscriptionsPoll2000Status = "pending"
+)
+
+// Valid indicates whether the value is a known member of the SubscriptionsPoll2000Status enum.
+func (e SubscriptionsPoll2000Status) Valid() bool {
+	switch e {
+	case SubscriptionsPoll2000StatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubscriptionsPoll4001Status.
+const (
+	SubscriptionsPoll4001StatusDenied  SubscriptionsPoll4001Status = "denied"
+	SubscriptionsPoll4001StatusExpired SubscriptionsPoll4001Status = "expired"
+)
+
+// Valid indicates whether the value is a known member of the SubscriptionsPoll4001Status enum.
+func (e SubscriptionsPoll4001Status) Valid() bool {
+	switch e {
+	case SubscriptionsPoll4001StatusDenied:
+		return true
+	case SubscriptionsPoll4001StatusExpired:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubscriptionsPoll4002Error.
+const (
+	SubscriptionsPoll4002ErrorSaveFailed SubscriptionsPoll4002Error = "save_failed"
+)
+
+// Valid indicates whether the value is a known member of the SubscriptionsPoll4002Error enum.
+func (e SubscriptionsPoll4002Error) Valid() bool {
+	switch e {
+	case SubscriptionsPoll4002ErrorSaveFailed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubscriptionsPoll4002Status.
+const (
+	SubscriptionsPoll4002StatusFailed SubscriptionsPoll4002Status = "failed"
+)
+
+// Valid indicates whether the value is a known member of the SubscriptionsPoll4002Status enum.
+func (e SubscriptionsPoll4002Status) Valid() bool {
+	switch e {
+	case SubscriptionsPoll4002StatusFailed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubscriptionsUpdateRequestMakePrimary.
+const (
+	SubscriptionsUpdateRequestMakePrimaryTrue SubscriptionsUpdateRequestMakePrimary = true
+)
+
+// Valid indicates whether the value is a known member of the SubscriptionsUpdateRequestMakePrimary enum.
+func (e SubscriptionsUpdateRequestMakePrimary) Valid() bool {
+	switch e {
+	case SubscriptionsUpdateRequestMakePrimaryTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubscriptionsUsage2002Kind.
+const (
+	SubscriptionsUsage2002KindMonthly SubscriptionsUsage2002Kind = "monthly"
+	SubscriptionsUsage2002KindWeekly  SubscriptionsUsage2002Kind = "weekly"
+)
+
+// Valid indicates whether the value is a known member of the SubscriptionsUsage2002Kind enum.
+func (e SubscriptionsUsage2002Kind) Valid() bool {
+	switch e {
+	case SubscriptionsUsage2002KindMonthly:
+		return true
+	case SubscriptionsUsage2002KindWeekly:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubscriptionsUsage2002OverallUnit.
+const (
+	SubscriptionsUsage2002OverallUnitCredits SubscriptionsUsage2002OverallUnit = "credits"
+	SubscriptionsUsage2002OverallUnitPercent SubscriptionsUsage2002OverallUnit = "percent"
+)
+
+// Valid indicates whether the value is a known member of the SubscriptionsUsage2002OverallUnit enum.
+func (e SubscriptionsUsage2002OverallUnit) Valid() bool {
+	switch e {
+	case SubscriptionsUsage2002OverallUnitCredits:
+		return true
+	case SubscriptionsUsage2002OverallUnitPercent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for IntegrationsConnectParamsIntegration.
+const (
+	IntegrationsConnectParamsIntegrationGithub   IntegrationsConnectParamsIntegration = "github"
+	IntegrationsConnectParamsIntegrationLinear   IntegrationsConnectParamsIntegration = "linear"
+	IntegrationsConnectParamsIntegrationSlack    IntegrationsConnectParamsIntegration = "slack"
+	IntegrationsConnectParamsIntegrationTelegram IntegrationsConnectParamsIntegration = "telegram"
+)
+
+// Valid indicates whether the value is a known member of the IntegrationsConnectParamsIntegration enum.
+func (e IntegrationsConnectParamsIntegration) Valid() bool {
+	switch e {
+	case IntegrationsConnectParamsIntegrationGithub:
+		return true
+	case IntegrationsConnectParamsIntegrationLinear:
+		return true
+	case IntegrationsConnectParamsIntegrationSlack:
+		return true
+	case IntegrationsConnectParamsIntegrationTelegram:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WorkspaceModelsRemoveKeyParamsProvider.
+const (
+	WorkspaceModelsRemoveKeyParamsProviderAnthropic  WorkspaceModelsRemoveKeyParamsProvider = "anthropic"
+	WorkspaceModelsRemoveKeyParamsProviderOpenrouter WorkspaceModelsRemoveKeyParamsProvider = "openrouter"
+)
+
+// Valid indicates whether the value is a known member of the WorkspaceModelsRemoveKeyParamsProvider enum.
+func (e WorkspaceModelsRemoveKeyParamsProvider) Valid() bool {
+	switch e {
+	case WorkspaceModelsRemoveKeyParamsProviderAnthropic:
+		return true
+	case WorkspaceModelsRemoveKeyParamsProviderOpenrouter:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubscriptionsPollParamsProvider.
+const (
+	SubscriptionsPollParamsProviderCodex  SubscriptionsPollParamsProvider = "codex"
+	SubscriptionsPollParamsProviderCursor SubscriptionsPollParamsProvider = "cursor"
+	SubscriptionsPollParamsProviderXai    SubscriptionsPollParamsProvider = "xai"
+)
+
+// Valid indicates whether the value is a known member of the SubscriptionsPollParamsProvider enum.
+func (e SubscriptionsPollParamsProvider) Valid() bool {
+	switch e {
+	case SubscriptionsPollParamsProviderCodex:
+		return true
+	case SubscriptionsPollParamsProviderCursor:
+		return true
+	case SubscriptionsPollParamsProviderXai:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubscriptionsStartParamsProvider.
+const (
+	SubscriptionsStartParamsProviderClaude SubscriptionsStartParamsProvider = "claude"
+	SubscriptionsStartParamsProviderCodex  SubscriptionsStartParamsProvider = "codex"
+	SubscriptionsStartParamsProviderCursor SubscriptionsStartParamsProvider = "cursor"
+	SubscriptionsStartParamsProviderXai    SubscriptionsStartParamsProvider = "xai"
+)
+
+// Valid indicates whether the value is a known member of the SubscriptionsStartParamsProvider enum.
+func (e SubscriptionsStartParamsProvider) Valid() bool {
+	switch e {
+	case SubscriptionsStartParamsProviderClaude:
+		return true
+	case SubscriptionsStartParamsProviderCodex:
+		return true
+	case SubscriptionsStartParamsProviderCursor:
+		return true
+	case SubscriptionsStartParamsProviderXai:
 		return true
 	default:
 		return false
@@ -218,6 +497,24 @@ type Account struct {
 		Name         *string `json:"name"`
 	} `json:"user"`
 }
+
+// BillingCheckoutRequest defines model for BillingCheckoutRequest.
+type BillingCheckoutRequest struct {
+	// Plan The paid capacity plan to buy.
+	Plan BillingCheckoutRequestPlan `json:"plan"`
+}
+
+// BillingCheckoutRequestPlan The paid capacity plan to buy.
+type BillingCheckoutRequestPlan string
+
+// BillingHandoff defines model for BillingHandoff.
+type BillingHandoff struct {
+	// Url An owner-only Stripe-hosted URL. Open it to continue; no billing credentials are returned.
+	Url string `json:"url"`
+}
+
+// BillingPortalRequest defines model for BillingPortalRequest.
+type BillingPortalRequest = map[string]interface{}
 
 // CreateMessageRequest A message to send on a task.
 type CreateMessageRequest struct {
@@ -310,7 +607,7 @@ type ErrorBody struct {
 	// BillingUrl The settings section that fixes the refusal: your model credentials or billing, on `payment_required`; billing, when starting a task, on `capacity_full`.
 	BillingUrl *string `json:"billingUrl,omitempty"`
 
-	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `actor_not_authorized`, `already_member`, `assigned_to_other`, `bad_request`, `capacity_full`, `consumed`, `declined`, `expired`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_model`, `invalid_prompt`, `invalid_repo`, `invalid_status`, `invalid_title`, `invalid_token`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `not_an_api_task`, `not_an_issue`, `not_found`, `not_running`, `payment_required`, `repo_disabled`, `request_not_found`, `request_not_pending`, `revoked`, `unavailable`.
+	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`.
 	Error string `json:"error"`
 
 	// MessageId On `unavailable`: the message that was saved but not sent yet. Retry with it as the `Idempotency-Key`.
@@ -339,6 +636,12 @@ type ErrorBody struct {
 
 	// TaskId On `unavailable` after a start: the task that was made. Retry with the same key, or send a message on it.
 	TaskId *string `json:"taskId,omitempty"`
+}
+
+// IntegrationConnect defines model for IntegrationConnect.
+type IntegrationConnect struct {
+	// Url A Sinatra dashboard URL to open in a browser. Authorization is completed there; no OAuth state, tokens or credentials are returned.
+	Url string `json:"url"`
 }
 
 // Me The token's user and workspaces.
@@ -399,6 +702,150 @@ type PullRequest struct {
 
 	// Url The pull request's address on GitHub.
 	Url string `json:"url"`
+}
+
+// RepoCapabilityRequests defines model for RepoCapabilityRequests.
+type RepoCapabilityRequests struct {
+	Requests []struct {
+		Capability            string      `json:"capability"`
+		CreatedAt             time.Time   `json:"createdAt"`
+		EnvVarName            *string     `json:"envVarName"`
+		Evidence              interface{} `json:"evidence"`
+		Id                    string      `json:"id"`
+		NotificationBatchKeys []string    `json:"notificationBatchKeys"`
+		NotifiedGeneration    float32     `json:"notifiedGeneration"`
+		NotifiedRecipientIds  []string    `json:"notifiedRecipientIds"`
+		Reason                string      `json:"reason"`
+		RepairGeneration      float32     `json:"repairGeneration"`
+		RepoId                string      `json:"repoId"`
+		State                 string      `json:"state"`
+		SuppliedSecretId      *string     `json:"suppliedSecretId"`
+		Target                string      `json:"target"`
+		UpdatedAt             time.Time   `json:"updatedAt"`
+		WorkspaceId           string      `json:"workspaceId"`
+	} `json:"requests"`
+}
+
+// RepoConfig defines model for RepoConfig.
+type RepoConfig struct {
+	FetchError         *string   `json:"fetchError"`
+	FetchedAt          time.Time `json:"fetchedAt"`
+	InheritedAutomatic *struct {
+		Effort *string `json:"effort,omitempty"`
+		Engine string  `json:"engine"`
+		Model  string  `json:"model"`
+		Reason *string `json:"reason,omitempty"`
+	} `json:"inheritedAutomatic"`
+	NextTask *struct {
+		Effort       *string `json:"effort,omitempty"`
+		EffortSource string  `json:"effortSource"`
+		Engine       string  `json:"engine"`
+		Model        string  `json:"model"`
+		ModelSource  string  `json:"modelSource"`
+		Reason       *string `json:"reason,omitempty"`
+	} `json:"nextTask"`
+	OverridableLeafs []string `json:"overridableLeafs"`
+	ParseError       *string  `json:"parseError"`
+
+	// Parsed Effective parsed configuration for the authenticated user.
+	Parsed map[string]interface{} `json:"parsed"`
+	Raw    *string                `json:"raw"`
+
+	// RepoParsed Inherited parsed configuration before personal overrides.
+	RepoParsed   map[string]interface{}  `json:"repoParsed"`
+	RepoSource   map[string]string       `json:"repoSource"`
+	Source       map[string]string       `json:"source"`
+	SourceFile   *string                 `json:"sourceFile"`
+	UserFragment *map[string]interface{} `json:"userFragment"`
+}
+
+// RepoConfigPreflight defines model for RepoConfigPreflight.
+type RepoConfigPreflight struct {
+	Issues []struct {
+		ConnectedCredentialsLabel string `json:"connectedCredentialsLabel"`
+		Engine                    string `json:"engine"`
+		Kind                      string `json:"kind"`
+		Model                     string `json:"model"`
+		Path                      string `json:"path"`
+		Provider                  string `json:"provider"`
+		RequiredCredentialLabel   string `json:"requiredCredentialLabel"`
+	} `json:"issues"`
+	WouldWarn bool `json:"wouldWarn"`
+}
+
+// RepoEnvironment defines model for RepoEnvironment.
+type RepoEnvironment struct {
+	Environment *struct {
+		ActiveVersionId  *string `json:"activeVersionId"`
+		InitialPassState string  `json:"initialPassState"`
+		Versions         []struct {
+			CompletedAt       *time.Time  `json:"completedAt"`
+			CreatedAt         time.Time   `json:"createdAt"`
+			FailureReason     *string     `json:"failureReason"`
+			Id                string      `json:"id"`
+			Origin            string      `json:"origin"`
+			Readiness         interface{} `json:"readiness"`
+			Sequence          float32     `json:"sequence"`
+			SnapshotResources interface{} `json:"snapshotResources"`
+			SourceCommit      *string     `json:"sourceCommit"`
+			Status            string      `json:"status"`
+			SupersededById    *string     `json:"supersededById"`
+		} `json:"versions"`
+	} `json:"environment"`
+	Updates []struct {
+		Change     string     `json:"change"`
+		CreatedAt  time.Time  `json:"createdAt"`
+		Evidence   string     `json:"evidence"`
+		FinishedAt *time.Time `json:"finishedAt"`
+		Id         string     `json:"id"`
+		Reason     string     `json:"reason"`
+		State      string     `json:"state"`
+		VersionId  *string    `json:"versionId"`
+	} `json:"updates"`
+}
+
+// RepoOverrideRequest defines model for RepoOverrideRequest.
+type RepoOverrideRequest struct {
+	// Fragment A personal override fragment. Only the returned overridableLeafs are accepted; engine, agent.model and agent.effort are not personal repo overrides.
+	Fragment map[string]interface{} `json:"fragment"`
+}
+
+// RepoSecret Secret metadata only: no plaintext, ciphertext, wrapped keys or masked value suffix.
+type RepoSecret struct {
+	CreatedAt time.Time `json:"createdAt"`
+	Header    string    `json:"header"`
+	Hosts     []string  `json:"hosts"`
+	Id        string    `json:"id"`
+	Name      string    `json:"name"`
+	Prefix    string    `json:"prefix"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+// RepoSecretPatchRequest Supply at least one proxy metadata field; does not change the secret value.
+type RepoSecretPatchRequest struct {
+	Header *string `json:"header,omitempty"`
+
+	// Hosts Allowed proxy target hosts. Required and nonempty on creation; omitted fields retain their stored values on rotation.
+	Hosts  *[]string `json:"hosts,omitempty"`
+	Prefix *string   `json:"prefix,omitempty"`
+}
+
+// RepoSecretPutRequest defines model for RepoSecretPutRequest.
+type RepoSecretPutRequest struct {
+	CapabilityRequestId *string `json:"capabilityRequestId,omitempty"`
+	Header              *string `json:"header,omitempty"`
+
+	// Hosts Allowed proxy target hosts. Required and nonempty on creation; omitted fields retain their stored values on rotation.
+	Hosts  *[]string `json:"hosts,omitempty"`
+	Prefix *string   `json:"prefix,omitempty"`
+
+	// Value Secret value, encrypted at rest and never returned. Do not pass it through MCP.
+	Value string `json:"value"`
+}
+
+// RepoSecrets defines model for RepoSecrets.
+type RepoSecrets struct {
+	Secrets []RepoSecret `json:"secrets"`
 }
 
 // StopTaskResponse The stop was accepted.
@@ -646,6 +1093,48 @@ type WorkspaceMembershipResponse struct {
 	} `json:"membership"`
 }
 
+// WorkspaceModelDefault defines model for WorkspaceModelDefault.
+type WorkspaceModelDefault struct {
+	// Selection The workspace default, or null to inherit automatic selection.
+	Selection *WorkspaceModelSelection `json:"selection"`
+}
+
+// WorkspaceModelKey defines model for WorkspaceModelKey.
+type WorkspaceModelKey struct {
+	// Provider The provider, currently anthropic or openrouter.
+	Provider string `json:"provider"`
+
+	// Status Currently configured. No key material or masked suffix is returned.
+	Status string `json:"status"`
+}
+
+// WorkspaceModelKeyRequest defines model for WorkspaceModelKeyRequest.
+type WorkspaceModelKeyRequest struct {
+	// ApiKey The provider API key. It is encrypted at rest and never returned.
+	ApiKey   string                           `json:"apiKey"`
+	Provider WorkspaceModelKeyRequestProvider `json:"provider"`
+}
+
+// WorkspaceModelKeyRequestProvider defines model for WorkspaceModelKeyRequest.Provider.
+type WorkspaceModelKeyRequestProvider string
+
+// WorkspaceModelKeys defines model for WorkspaceModelKeys.
+type WorkspaceModelKeys struct {
+	Credentials []WorkspaceModelKey `json:"credentials"`
+}
+
+// WorkspaceModelSelection defines model for WorkspaceModelSelection.
+type WorkspaceModelSelection struct {
+	// Effort An effort supported by that engine and model; omitted when not applicable.
+	Effort *string `json:"effort,omitempty"`
+
+	// Engine A supported engine from Sinatra's model catalog.
+	Engine string `json:"engine"`
+
+	// Model A model supported by the selected engine.
+	Model string `json:"model"`
+}
+
 // WorkspaceOverview Read-only workspace overview, with the same member-visible data as the dashboard. No credentials or tokens.
 type WorkspaceOverview struct {
 	// DefaultModel The workspace's saved model default, or null when unset. Personal and repository overrides aren't included.
@@ -682,8 +1171,10 @@ type WorkspaceOverview struct {
 	} `json:"linear"`
 
 	// Name The workspace's name.
-	Name       string                       `json:"name"`
-	PlanStatus WorkspaceOverview_PlanStatus `json:"planStatus"`
+	Name string `json:"name"`
+
+	// PlanStatus The member-visible billing and capacity status shared by workspace overview and billing settings. No Stripe identifiers or credential material are returned.
+	PlanStatus WorkspacePlanStatus `json:"planStatus"`
 
 	// RepoCatalog `none` without GitHub, `syncing` before its catalog is published, `ready` once published, or `suspended`. An empty repository list while syncing doesn't mean there are no connected repositories.
 	RepoCatalog             string `json:"repoCatalog"`
@@ -728,52 +1219,11 @@ type WorkspaceOverview struct {
 	} `json:"slack"`
 	Telegram struct {
 		Available bool `json:"available"`
+
+		// Connected Whether the current user has linked their personal Telegram account. This is independent of workspace enablement.
+		Connected bool `json:"connected"`
 		Enabled   bool `json:"enabled"`
 	} `json:"telegram"`
-}
-
-// WorkspaceOverviewPlanStatus0 defines model for WorkspaceOverview.PlanStatus.0.
-type WorkspaceOverviewPlanStatus0 struct {
-	Plan WorkspaceOverviewPlanStatus0Plan `json:"plan"`
-}
-
-// WorkspaceOverviewPlanStatus0Plan defines model for WorkspaceOverview.PlanStatus.0.Plan.
-type WorkspaceOverviewPlanStatus0Plan string
-
-// WorkspaceOverviewPlanStatus1 defines model for WorkspaceOverview.PlanStatus.1.
-type WorkspaceOverviewPlanStatus1 struct {
-	// ByokConfigured Whether your model credentials or a workspace key are configured.
-	ByokConfigured bool `json:"byokConfigured"`
-	Capacity       struct {
-		Plan    string `json:"plan"`
-		Queued  int    `json:"queued"`
-		Running int    `json:"running"`
-	} `json:"capacity"`
-	CapacityCatalog []struct {
-		Plan     string  `json:"plan"`
-		PriceUsd float32 `json:"priceUsd"`
-		Queued   int     `json:"queued"`
-		Running  int     `json:"running"`
-	} `json:"capacityCatalog"`
-	Plan         WorkspaceOverviewPlanStatus1Plan `json:"plan"`
-	Subscription *struct {
-		ActionRequiredHostedInvoiceUrl *string    `json:"actionRequiredHostedInvoiceUrl"`
-		CancelAtPeriodEnd              bool       `json:"cancelAtPeriodEnd"`
-		CapacityPlan                   *string    `json:"capacityPlan"`
-		CurrentPeriodEnd               *time.Time `json:"currentPeriodEnd"`
-		EndsAt                         *time.Time `json:"endsAt"`
-		PastDueSinceAt                 *time.Time `json:"pastDueSinceAt"`
-		Status                         string     `json:"status"`
-		TrialEndsAt                    *time.Time `json:"trialEndsAt"`
-	} `json:"subscription"`
-}
-
-// WorkspaceOverviewPlanStatus1Plan defines model for WorkspaceOverview.PlanStatus.1.Plan.
-type WorkspaceOverviewPlanStatus1Plan string
-
-// WorkspaceOverview_PlanStatus defines model for WorkspaceOverview.PlanStatus.
-type WorkspaceOverview_PlanStatus struct {
-	union json.RawMessage
 }
 
 // WorkspaceOwnershipTransferred defines model for WorkspaceOwnershipTransferred.
@@ -788,8 +1238,305 @@ type WorkspaceOwnershipTransferred struct {
 	} `json:"to"`
 }
 
+// WorkspacePlanStatus The member-visible billing and capacity status shared by workspace overview and billing settings. No Stripe identifiers or credential material are returned.
+type WorkspacePlanStatus struct {
+	union json.RawMessage
+}
+
+// WorkspacePlanStatus0 defines model for WorkspacePlanStatus.0.
+type WorkspacePlanStatus0 struct {
+	Plan WorkspacePlanStatus0Plan `json:"plan"`
+}
+
+// WorkspacePlanStatus0Plan defines model for WorkspacePlanStatus.0.Plan.
+type WorkspacePlanStatus0Plan string
+
+// WorkspacePlanStatus1 defines model for WorkspacePlanStatus.1.
+type WorkspacePlanStatus1 struct {
+	// ByokConfigured Whether your model credentials or a workspace key are configured.
+	ByokConfigured bool `json:"byokConfigured"`
+	Capacity       struct {
+		Plan    string `json:"plan"`
+		Queued  int    `json:"queued"`
+		Running int    `json:"running"`
+	} `json:"capacity"`
+	CapacityCatalog []struct {
+		Plan     string  `json:"plan"`
+		PriceUsd float32 `json:"priceUsd"`
+		Queued   int     `json:"queued"`
+		Running  int     `json:"running"`
+	} `json:"capacityCatalog"`
+	Plan         WorkspacePlanStatus1Plan `json:"plan"`
+	Subscription *struct {
+		ActionRequiredHostedInvoiceUrl *string    `json:"actionRequiredHostedInvoiceUrl"`
+		CancelAtPeriodEnd              bool       `json:"cancelAtPeriodEnd"`
+		CapacityPlan                   *string    `json:"capacityPlan"`
+		CurrentPeriodEnd               *time.Time `json:"currentPeriodEnd"`
+		EndsAt                         *time.Time `json:"endsAt"`
+		PastDueSinceAt                 *time.Time `json:"pastDueSinceAt"`
+		Status                         string     `json:"status"`
+		TrialEndsAt                    *time.Time `json:"trialEndsAt"`
+	} `json:"subscription"`
+}
+
+// WorkspacePlanStatus1Plan defines model for WorkspacePlanStatus.1.Plan.
+type WorkspacePlanStatus1Plan string
+
+// SubscriptionsComplete200 defines model for subscriptions_complete_200.
+type SubscriptionsComplete200 struct {
+	Email  *string                        `json:"email"`
+	Status SubscriptionsComplete200Status `json:"status"`
+}
+
+// SubscriptionsComplete200Status defines model for SubscriptionsComplete200.Status.
+type SubscriptionsComplete200Status string
+
+// SubscriptionsCompleteRequest defines model for subscriptions_complete_Request.
+type SubscriptionsCompleteRequest struct {
+	Code         string `json:"code"`
+	PendingToken string `json:"pendingToken"`
+	State        string `json:"state"`
+}
+
+// SubscriptionsList200 defines model for subscriptions_list_200.
+type SubscriptionsList200 struct {
+	Connections []struct {
+		AnthropicAccountId *string `json:"anthropicAccountId,omitempty"`
+		ChatgptAccountId   *string `json:"chatgptAccountId,omitempty"`
+		Connected          bool    `json:"connected"`
+		CreatedAt          string  `json:"createdAt"`
+		Email              *string `json:"email"`
+		Id                 string  `json:"id"`
+		Label              *string `json:"label"`
+		NeedsReconnect     bool    `json:"needsReconnect"`
+
+		// Primary Whether this is your primary connection for this provider in this workspace.
+		Primary      bool                                    `json:"primary"`
+		Provider     SubscriptionsList200ConnectionsProvider `json:"provider"`
+		XaiAccountId *string                                 `json:"xaiAccountId,omitempty"`
+	} `json:"connections"`
+}
+
+// SubscriptionsList200ConnectionsProvider defines model for SubscriptionsList200.Connections.Provider.
+type SubscriptionsList200ConnectionsProvider string
+
+// SubscriptionsPoll200 defines model for subscriptions_poll_200.
+type SubscriptionsPoll200 struct {
+	union json.RawMessage
+}
+
+// SubscriptionsPoll2000 defines model for SubscriptionsPoll200.0.
+type SubscriptionsPoll2000 struct {
+	Status SubscriptionsPoll2000Status `json:"status"`
+}
+
+// SubscriptionsPoll2000Status defines model for SubscriptionsPoll200.0.Status.
+type SubscriptionsPoll2000Status string
+
+// SubscriptionsPoll400 defines model for subscriptions_poll_400.
+type SubscriptionsPoll400 struct {
+	union json.RawMessage
+}
+
+// SubscriptionsPoll4001 defines model for SubscriptionsPoll400.1.
+type SubscriptionsPoll4001 struct {
+	Status SubscriptionsPoll4001Status `json:"status"`
+}
+
+// SubscriptionsPoll4001Status defines model for SubscriptionsPoll400.1.Status.
+type SubscriptionsPoll4001Status string
+
+// SubscriptionsPoll4002 defines model for SubscriptionsPoll400.2.
+type SubscriptionsPoll4002 struct {
+	Error  SubscriptionsPoll4002Error  `json:"error"`
+	Status SubscriptionsPoll4002Status `json:"status"`
+}
+
+// SubscriptionsPoll4002Error defines model for SubscriptionsPoll400.2.Error.
+type SubscriptionsPoll4002Error string
+
+// SubscriptionsPoll4002Status defines model for SubscriptionsPoll400.2.Status.
+type SubscriptionsPoll4002Status string
+
+// SubscriptionsPollRequest defines model for subscriptions_poll_Request.
+type SubscriptionsPollRequest struct {
+	union json.RawMessage
+}
+
+// SubscriptionsPollRequest0 Codex
+type SubscriptionsPollRequest0 struct {
+	DeviceAuthId string `json:"deviceAuthId"`
+	PollToken    string `json:"pollToken"`
+	UserCode     string `json:"userCode"`
+}
+
+// SubscriptionsPollRequest1 xAI
+type SubscriptionsPollRequest1 struct {
+	DeviceCode string `json:"deviceCode"`
+	PollToken  string `json:"pollToken"`
+}
+
+// SubscriptionsPollRequest2 Cursor
+type SubscriptionsPollRequest2 struct {
+	PollToken string `json:"pollToken"`
+}
+
+// SubscriptionsStart200 defines model for subscriptions_start_200.
+type SubscriptionsStart200 struct {
+	union json.RawMessage
+}
+
+// SubscriptionsStart2000 Codex
+type SubscriptionsStart2000 struct {
+	DeviceAuthId    string  `json:"deviceAuthId"`
+	Interval        float32 `json:"interval"`
+	PollToken       string  `json:"pollToken"`
+	UserCode        string  `json:"userCode"`
+	VerificationUrl string  `json:"verificationUrl"`
+}
+
+// SubscriptionsStart2001 xAI
+type SubscriptionsStart2001 struct {
+	DeviceCode      string  `json:"deviceCode"`
+	Interval        float32 `json:"interval"`
+	PollToken       string  `json:"pollToken"`
+	UserCode        string  `json:"userCode"`
+	VerificationUrl string  `json:"verificationUrl"`
+}
+
+// SubscriptionsStart2002 Cursor
+type SubscriptionsStart2002 struct {
+	Interval  float32 `json:"interval"`
+	LoginUrl  string  `json:"loginUrl"`
+	PollToken string  `json:"pollToken"`
+}
+
+// SubscriptionsStart2003 Claude
+type SubscriptionsStart2003 struct {
+	AuthorizeUrl string `json:"authorizeUrl"`
+	PendingToken string `json:"pendingToken"`
+	State        string `json:"state"`
+}
+
+// SubscriptionsUpdate200 defines model for subscriptions_update_200.
+type SubscriptionsUpdate200 struct {
+	Id      string  `json:"id"`
+	Label   *string `json:"label"`
+	Primary bool    `json:"primary"`
+}
+
+// SubscriptionsUpdateRequest Provide at least one field. Use `label: null` to clear the label, or `makePrimary: true` to select this connection.
+type SubscriptionsUpdateRequest struct {
+	Label       *string                                `json:"label,omitempty"`
+	MakePrimary *SubscriptionsUpdateRequestMakePrimary `json:"makePrimary,omitempty"`
+}
+
+// SubscriptionsUpdateRequestMakePrimary defines model for SubscriptionsUpdateRequest.MakePrimary.
+type SubscriptionsUpdateRequestMakePrimary bool
+
+// SubscriptionsUsage200 defines model for subscriptions_usage_200.
+type SubscriptionsUsage200 struct {
+	union json.RawMessage
+}
+
+// SubscriptionsUsage2000 Codex usage: rolling and weekly caps, plan and banked reset credits when reported.
+type SubscriptionsUsage2000 struct {
+	FetchedAt string `json:"fetchedAt"`
+	FiveHour  *struct {
+		LeftPercent   float32  `json:"leftPercent"`
+		ResetsAt      *string  `json:"resetsAt,omitempty"`
+		UsedPercent   float32  `json:"usedPercent"`
+		WindowSeconds *float32 `json:"windowSeconds,omitempty"`
+	} `json:"fiveHour,omitempty"`
+	Plan         *string `json:"plan,omitempty"`
+	ResetCredits *struct {
+		AvailableCount float32 `json:"availableCount"`
+		Credits        *[]struct {
+			ExpiresAt *string `json:"expiresAt,omitempty"`
+			GrantedAt *string `json:"grantedAt,omitempty"`
+			Id        string  `json:"id"`
+			Status    string  `json:"status"`
+			Title     *string `json:"title,omitempty"`
+		} `json:"credits,omitempty"`
+	} `json:"resetCredits,omitempty"`
+	Weekly *struct {
+		LeftPercent   float32  `json:"leftPercent"`
+		ResetsAt      *string  `json:"resetsAt,omitempty"`
+		UsedPercent   float32  `json:"usedPercent"`
+		WindowSeconds *float32 `json:"windowSeconds,omitempty"`
+	} `json:"weekly,omitempty"`
+}
+
+// SubscriptionsUsage2001 Claude usage: rolling and weekly caps and additional provider-reported windows.
+type SubscriptionsUsage2001 struct {
+	ExtraWindows *[]struct {
+		Label       string  `json:"label"`
+		LeftPercent float32 `json:"leftPercent"`
+		ResetsAt    *string `json:"resetsAt,omitempty"`
+		UsedPercent float32 `json:"usedPercent"`
+	} `json:"extraWindows,omitempty"`
+	FetchedAt string `json:"fetchedAt"`
+	FiveHour  *struct {
+		LeftPercent float32 `json:"leftPercent"`
+		ResetsAt    *string `json:"resetsAt,omitempty"`
+		UsedPercent float32 `json:"usedPercent"`
+	} `json:"fiveHour,omitempty"`
+	Weekly *struct {
+		LeftPercent float32 `json:"leftPercent"`
+		ResetsAt    *string `json:"resetsAt,omitempty"`
+		UsedPercent float32 `json:"usedPercent"`
+	} `json:"weekly,omitempty"`
+}
+
+// SubscriptionsUsage2002 xAI usage: overall allowance, per-product percentages and optional on-demand spending.
+type SubscriptionsUsage2002 struct {
+	Kind     SubscriptionsUsage2002Kind `json:"kind"`
+	OnDemand *struct {
+		Limit float32 `json:"limit"`
+		Used  float32 `json:"used"`
+	} `json:"onDemand,omitempty"`
+	Overall struct {
+		Limit     float32                           `json:"limit"`
+		Remaining float32                           `json:"remaining"`
+		ResetsAt  *string                           `json:"resetsAt,omitempty"`
+		Unit      SubscriptionsUsage2002OverallUnit `json:"unit"`
+		Used      float32                           `json:"used"`
+	} `json:"overall"`
+	Products []struct {
+		Product     string  `json:"product"`
+		UsedPercent float32 `json:"usedPercent"`
+	} `json:"products"`
+}
+
+// SubscriptionsUsage2002Kind defines model for SubscriptionsUsage200.2.Kind.
+type SubscriptionsUsage2002Kind string
+
+// SubscriptionsUsage2002OverallUnit defines model for SubscriptionsUsage200.2.Overall.Unit.
+type SubscriptionsUsage2002OverallUnit string
+
+// SubscriptionsUsage2003 Cursor usage windows.
+type SubscriptionsUsage2003 struct {
+	Windows []struct {
+		Label       string  `json:"label"`
+		ResetsAt    *string `json:"resetsAt,omitempty"`
+		UsedPercent float32 `json:"usedPercent"`
+	} `json:"windows"`
+}
+
 // IdempotencyKey defines model for IdempotencyKey.
 type IdempotencyKey = string
+
+// IntegrationsConnectParamsIntegration defines parameters for IntegrationsConnect.
+type IntegrationsConnectParamsIntegration string
+
+// WorkspaceModelsRemoveKeyParamsProvider defines parameters for WorkspaceModelsRemoveKey.
+type WorkspaceModelsRemoveKeyParamsProvider string
+
+// SubscriptionsPollParamsProvider defines parameters for SubscriptionsPoll.
+type SubscriptionsPollParamsProvider string
+
+// SubscriptionsStartParamsProvider defines parameters for SubscriptionsStart.
+type SubscriptionsStartParamsProvider string
 
 // TasksListParams defines parameters for TasksList.
 type TasksListParams struct {
@@ -839,11 +1586,44 @@ type MeUpdateEmailPreferencesJSONRequestBody = UpdateEmailPreferencesRequest
 // WorkspaceAccessApproveRequestJSONRequestBody defines body for WorkspaceAccessApproveRequest for application/json ContentType.
 type WorkspaceAccessApproveRequestJSONRequestBody = WorkspaceGrantRoleRequest
 
+// BillingCheckoutJSONRequestBody defines body for BillingCheckout for application/json ContentType.
+type BillingCheckoutJSONRequestBody = BillingCheckoutRequest
+
+// BillingPortalJSONRequestBody defines body for BillingPortal for application/json ContentType.
+type BillingPortalJSONRequestBody = BillingPortalRequest
+
 // WorkspaceAccessCreateInviteJSONRequestBody defines body for WorkspaceAccessCreateInvite for application/json ContentType.
 type WorkspaceAccessCreateInviteJSONRequestBody = WorkspaceInviteCreateRequest
 
 // WorkspaceAccessSetRoleJSONRequestBody defines body for WorkspaceAccessSetRole for application/json ContentType.
 type WorkspaceAccessSetRoleJSONRequestBody = WorkspaceGrantRoleRequest
+
+// WorkspaceModelsAddKeyJSONRequestBody defines body for WorkspaceModelsAddKey for application/json ContentType.
+type WorkspaceModelsAddKeyJSONRequestBody = WorkspaceModelKeyRequest
+
+// WorkspaceModelsSetDefaultJSONRequestBody defines body for WorkspaceModelsSetDefault for application/json ContentType.
+type WorkspaceModelsSetDefaultJSONRequestBody = WorkspaceModelSelection
+
+// ReposPreflightJSONRequestBody defines body for ReposPreflight for application/json ContentType.
+type ReposPreflightJSONRequestBody = RepoOverrideRequest
+
+// ReposPatchSecretJSONRequestBody defines body for ReposPatchSecret for application/json ContentType.
+type ReposPatchSecretJSONRequestBody = RepoSecretPatchRequest
+
+// ReposPutSecretJSONRequestBody defines body for ReposPutSecret for application/json ContentType.
+type ReposPutSecretJSONRequestBody = RepoSecretPutRequest
+
+// ReposSetOverrideJSONRequestBody defines body for ReposSetOverride for application/json ContentType.
+type ReposSetOverrideJSONRequestBody = RepoOverrideRequest
+
+// SubscriptionsCompleteJSONRequestBody defines body for SubscriptionsComplete for application/json ContentType.
+type SubscriptionsCompleteJSONRequestBody = SubscriptionsCompleteRequest
+
+// SubscriptionsUpdateJSONRequestBody defines body for SubscriptionsUpdate for application/json ContentType.
+type SubscriptionsUpdateJSONRequestBody = SubscriptionsUpdateRequest
+
+// SubscriptionsPollJSONRequestBody defines body for SubscriptionsPoll for application/json ContentType.
+type SubscriptionsPollJSONRequestBody = SubscriptionsPollRequest
 
 // TasksCreateJSONRequestBody defines body for TasksCreate for application/json ContentType.
 type TasksCreateJSONRequestBody = CreateTaskRequest
@@ -1017,22 +1797,22 @@ func (t *UpdateEmailPreferencesRequest) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsWorkspaceOverviewPlanStatus0 returns the union data inside the WorkspaceOverview_PlanStatus as a WorkspaceOverviewPlanStatus0
-func (t WorkspaceOverview_PlanStatus) AsWorkspaceOverviewPlanStatus0() (WorkspaceOverviewPlanStatus0, error) {
-	var body WorkspaceOverviewPlanStatus0
+// AsWorkspacePlanStatus0 returns the union data inside the WorkspacePlanStatus as a WorkspacePlanStatus0
+func (t WorkspacePlanStatus) AsWorkspacePlanStatus0() (WorkspacePlanStatus0, error) {
+	var body WorkspacePlanStatus0
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromWorkspaceOverviewPlanStatus0 overwrites any union data inside the WorkspaceOverview_PlanStatus as the provided WorkspaceOverviewPlanStatus0
-func (t *WorkspaceOverview_PlanStatus) FromWorkspaceOverviewPlanStatus0(v WorkspaceOverviewPlanStatus0) error {
+// FromWorkspacePlanStatus0 overwrites any union data inside the WorkspacePlanStatus as the provided WorkspacePlanStatus0
+func (t *WorkspacePlanStatus) FromWorkspacePlanStatus0(v WorkspacePlanStatus0) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeWorkspaceOverviewPlanStatus0 performs a merge with any union data inside the WorkspaceOverview_PlanStatus, using the provided WorkspaceOverviewPlanStatus0
-func (t *WorkspaceOverview_PlanStatus) MergeWorkspaceOverviewPlanStatus0(v WorkspaceOverviewPlanStatus0) error {
+// MergeWorkspacePlanStatus0 performs a merge with any union data inside the WorkspacePlanStatus, using the provided WorkspacePlanStatus0
+func (t *WorkspacePlanStatus) MergeWorkspacePlanStatus0(v WorkspacePlanStatus0) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1043,22 +1823,22 @@ func (t *WorkspaceOverview_PlanStatus) MergeWorkspaceOverviewPlanStatus0(v Works
 	return err
 }
 
-// AsWorkspaceOverviewPlanStatus1 returns the union data inside the WorkspaceOverview_PlanStatus as a WorkspaceOverviewPlanStatus1
-func (t WorkspaceOverview_PlanStatus) AsWorkspaceOverviewPlanStatus1() (WorkspaceOverviewPlanStatus1, error) {
-	var body WorkspaceOverviewPlanStatus1
+// AsWorkspacePlanStatus1 returns the union data inside the WorkspacePlanStatus as a WorkspacePlanStatus1
+func (t WorkspacePlanStatus) AsWorkspacePlanStatus1() (WorkspacePlanStatus1, error) {
+	var body WorkspacePlanStatus1
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromWorkspaceOverviewPlanStatus1 overwrites any union data inside the WorkspaceOverview_PlanStatus as the provided WorkspaceOverviewPlanStatus1
-func (t *WorkspaceOverview_PlanStatus) FromWorkspaceOverviewPlanStatus1(v WorkspaceOverviewPlanStatus1) error {
+// FromWorkspacePlanStatus1 overwrites any union data inside the WorkspacePlanStatus as the provided WorkspacePlanStatus1
+func (t *WorkspacePlanStatus) FromWorkspacePlanStatus1(v WorkspacePlanStatus1) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeWorkspaceOverviewPlanStatus1 performs a merge with any union data inside the WorkspaceOverview_PlanStatus, using the provided WorkspaceOverviewPlanStatus1
-func (t *WorkspaceOverview_PlanStatus) MergeWorkspaceOverviewPlanStatus1(v WorkspaceOverviewPlanStatus1) error {
+// MergeWorkspacePlanStatus1 performs a merge with any union data inside the WorkspacePlanStatus, using the provided WorkspacePlanStatus1
+func (t *WorkspacePlanStatus) MergeWorkspacePlanStatus1(v WorkspacePlanStatus1) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1069,12 +1849,478 @@ func (t *WorkspaceOverview_PlanStatus) MergeWorkspaceOverviewPlanStatus1(v Works
 	return err
 }
 
-func (t WorkspaceOverview_PlanStatus) MarshalJSON() ([]byte, error) {
+func (t WorkspacePlanStatus) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *WorkspaceOverview_PlanStatus) UnmarshalJSON(b []byte) error {
+func (t *WorkspacePlanStatus) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsSubscriptionsPoll2000 returns the union data inside the SubscriptionsPoll200 as a SubscriptionsPoll2000
+func (t SubscriptionsPoll200) AsSubscriptionsPoll2000() (SubscriptionsPoll2000, error) {
+	var body SubscriptionsPoll2000
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSubscriptionsPoll2000 overwrites any union data inside the SubscriptionsPoll200 as the provided SubscriptionsPoll2000
+func (t *SubscriptionsPoll200) FromSubscriptionsPoll2000(v SubscriptionsPoll2000) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSubscriptionsPoll2000 performs a merge with any union data inside the SubscriptionsPoll200, using the provided SubscriptionsPoll2000
+func (t *SubscriptionsPoll200) MergeSubscriptionsPoll2000(v SubscriptionsPoll2000) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSubscriptionsComplete200 returns the union data inside the SubscriptionsPoll200 as a SubscriptionsComplete200
+func (t SubscriptionsPoll200) AsSubscriptionsComplete200() (SubscriptionsComplete200, error) {
+	var body SubscriptionsComplete200
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSubscriptionsComplete200 overwrites any union data inside the SubscriptionsPoll200 as the provided SubscriptionsComplete200
+func (t *SubscriptionsPoll200) FromSubscriptionsComplete200(v SubscriptionsComplete200) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSubscriptionsComplete200 performs a merge with any union data inside the SubscriptionsPoll200, using the provided SubscriptionsComplete200
+func (t *SubscriptionsPoll200) MergeSubscriptionsComplete200(v SubscriptionsComplete200) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t SubscriptionsPoll200) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *SubscriptionsPoll200) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsErrorBody returns the union data inside the SubscriptionsPoll400 as a ErrorBody
+func (t SubscriptionsPoll400) AsErrorBody() (ErrorBody, error) {
+	var body ErrorBody
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromErrorBody overwrites any union data inside the SubscriptionsPoll400 as the provided ErrorBody
+func (t *SubscriptionsPoll400) FromErrorBody(v ErrorBody) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeErrorBody performs a merge with any union data inside the SubscriptionsPoll400, using the provided ErrorBody
+func (t *SubscriptionsPoll400) MergeErrorBody(v ErrorBody) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSubscriptionsPoll4001 returns the union data inside the SubscriptionsPoll400 as a SubscriptionsPoll4001
+func (t SubscriptionsPoll400) AsSubscriptionsPoll4001() (SubscriptionsPoll4001, error) {
+	var body SubscriptionsPoll4001
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSubscriptionsPoll4001 overwrites any union data inside the SubscriptionsPoll400 as the provided SubscriptionsPoll4001
+func (t *SubscriptionsPoll400) FromSubscriptionsPoll4001(v SubscriptionsPoll4001) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSubscriptionsPoll4001 performs a merge with any union data inside the SubscriptionsPoll400, using the provided SubscriptionsPoll4001
+func (t *SubscriptionsPoll400) MergeSubscriptionsPoll4001(v SubscriptionsPoll4001) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSubscriptionsPoll4002 returns the union data inside the SubscriptionsPoll400 as a SubscriptionsPoll4002
+func (t SubscriptionsPoll400) AsSubscriptionsPoll4002() (SubscriptionsPoll4002, error) {
+	var body SubscriptionsPoll4002
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSubscriptionsPoll4002 overwrites any union data inside the SubscriptionsPoll400 as the provided SubscriptionsPoll4002
+func (t *SubscriptionsPoll400) FromSubscriptionsPoll4002(v SubscriptionsPoll4002) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSubscriptionsPoll4002 performs a merge with any union data inside the SubscriptionsPoll400, using the provided SubscriptionsPoll4002
+func (t *SubscriptionsPoll400) MergeSubscriptionsPoll4002(v SubscriptionsPoll4002) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t SubscriptionsPoll400) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *SubscriptionsPoll400) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsSubscriptionsPollRequest0 returns the union data inside the SubscriptionsPollRequest as a SubscriptionsPollRequest0
+func (t SubscriptionsPollRequest) AsSubscriptionsPollRequest0() (SubscriptionsPollRequest0, error) {
+	var body SubscriptionsPollRequest0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSubscriptionsPollRequest0 overwrites any union data inside the SubscriptionsPollRequest as the provided SubscriptionsPollRequest0
+func (t *SubscriptionsPollRequest) FromSubscriptionsPollRequest0(v SubscriptionsPollRequest0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSubscriptionsPollRequest0 performs a merge with any union data inside the SubscriptionsPollRequest, using the provided SubscriptionsPollRequest0
+func (t *SubscriptionsPollRequest) MergeSubscriptionsPollRequest0(v SubscriptionsPollRequest0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSubscriptionsPollRequest1 returns the union data inside the SubscriptionsPollRequest as a SubscriptionsPollRequest1
+func (t SubscriptionsPollRequest) AsSubscriptionsPollRequest1() (SubscriptionsPollRequest1, error) {
+	var body SubscriptionsPollRequest1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSubscriptionsPollRequest1 overwrites any union data inside the SubscriptionsPollRequest as the provided SubscriptionsPollRequest1
+func (t *SubscriptionsPollRequest) FromSubscriptionsPollRequest1(v SubscriptionsPollRequest1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSubscriptionsPollRequest1 performs a merge with any union data inside the SubscriptionsPollRequest, using the provided SubscriptionsPollRequest1
+func (t *SubscriptionsPollRequest) MergeSubscriptionsPollRequest1(v SubscriptionsPollRequest1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSubscriptionsPollRequest2 returns the union data inside the SubscriptionsPollRequest as a SubscriptionsPollRequest2
+func (t SubscriptionsPollRequest) AsSubscriptionsPollRequest2() (SubscriptionsPollRequest2, error) {
+	var body SubscriptionsPollRequest2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSubscriptionsPollRequest2 overwrites any union data inside the SubscriptionsPollRequest as the provided SubscriptionsPollRequest2
+func (t *SubscriptionsPollRequest) FromSubscriptionsPollRequest2(v SubscriptionsPollRequest2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSubscriptionsPollRequest2 performs a merge with any union data inside the SubscriptionsPollRequest, using the provided SubscriptionsPollRequest2
+func (t *SubscriptionsPollRequest) MergeSubscriptionsPollRequest2(v SubscriptionsPollRequest2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t SubscriptionsPollRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *SubscriptionsPollRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsSubscriptionsStart2000 returns the union data inside the SubscriptionsStart200 as a SubscriptionsStart2000
+func (t SubscriptionsStart200) AsSubscriptionsStart2000() (SubscriptionsStart2000, error) {
+	var body SubscriptionsStart2000
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSubscriptionsStart2000 overwrites any union data inside the SubscriptionsStart200 as the provided SubscriptionsStart2000
+func (t *SubscriptionsStart200) FromSubscriptionsStart2000(v SubscriptionsStart2000) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSubscriptionsStart2000 performs a merge with any union data inside the SubscriptionsStart200, using the provided SubscriptionsStart2000
+func (t *SubscriptionsStart200) MergeSubscriptionsStart2000(v SubscriptionsStart2000) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSubscriptionsStart2001 returns the union data inside the SubscriptionsStart200 as a SubscriptionsStart2001
+func (t SubscriptionsStart200) AsSubscriptionsStart2001() (SubscriptionsStart2001, error) {
+	var body SubscriptionsStart2001
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSubscriptionsStart2001 overwrites any union data inside the SubscriptionsStart200 as the provided SubscriptionsStart2001
+func (t *SubscriptionsStart200) FromSubscriptionsStart2001(v SubscriptionsStart2001) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSubscriptionsStart2001 performs a merge with any union data inside the SubscriptionsStart200, using the provided SubscriptionsStart2001
+func (t *SubscriptionsStart200) MergeSubscriptionsStart2001(v SubscriptionsStart2001) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSubscriptionsStart2002 returns the union data inside the SubscriptionsStart200 as a SubscriptionsStart2002
+func (t SubscriptionsStart200) AsSubscriptionsStart2002() (SubscriptionsStart2002, error) {
+	var body SubscriptionsStart2002
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSubscriptionsStart2002 overwrites any union data inside the SubscriptionsStart200 as the provided SubscriptionsStart2002
+func (t *SubscriptionsStart200) FromSubscriptionsStart2002(v SubscriptionsStart2002) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSubscriptionsStart2002 performs a merge with any union data inside the SubscriptionsStart200, using the provided SubscriptionsStart2002
+func (t *SubscriptionsStart200) MergeSubscriptionsStart2002(v SubscriptionsStart2002) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSubscriptionsStart2003 returns the union data inside the SubscriptionsStart200 as a SubscriptionsStart2003
+func (t SubscriptionsStart200) AsSubscriptionsStart2003() (SubscriptionsStart2003, error) {
+	var body SubscriptionsStart2003
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSubscriptionsStart2003 overwrites any union data inside the SubscriptionsStart200 as the provided SubscriptionsStart2003
+func (t *SubscriptionsStart200) FromSubscriptionsStart2003(v SubscriptionsStart2003) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSubscriptionsStart2003 performs a merge with any union data inside the SubscriptionsStart200, using the provided SubscriptionsStart2003
+func (t *SubscriptionsStart200) MergeSubscriptionsStart2003(v SubscriptionsStart2003) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t SubscriptionsStart200) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *SubscriptionsStart200) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsSubscriptionsUsage2000 returns the union data inside the SubscriptionsUsage200 as a SubscriptionsUsage2000
+func (t SubscriptionsUsage200) AsSubscriptionsUsage2000() (SubscriptionsUsage2000, error) {
+	var body SubscriptionsUsage2000
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSubscriptionsUsage2000 overwrites any union data inside the SubscriptionsUsage200 as the provided SubscriptionsUsage2000
+func (t *SubscriptionsUsage200) FromSubscriptionsUsage2000(v SubscriptionsUsage2000) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSubscriptionsUsage2000 performs a merge with any union data inside the SubscriptionsUsage200, using the provided SubscriptionsUsage2000
+func (t *SubscriptionsUsage200) MergeSubscriptionsUsage2000(v SubscriptionsUsage2000) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSubscriptionsUsage2001 returns the union data inside the SubscriptionsUsage200 as a SubscriptionsUsage2001
+func (t SubscriptionsUsage200) AsSubscriptionsUsage2001() (SubscriptionsUsage2001, error) {
+	var body SubscriptionsUsage2001
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSubscriptionsUsage2001 overwrites any union data inside the SubscriptionsUsage200 as the provided SubscriptionsUsage2001
+func (t *SubscriptionsUsage200) FromSubscriptionsUsage2001(v SubscriptionsUsage2001) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSubscriptionsUsage2001 performs a merge with any union data inside the SubscriptionsUsage200, using the provided SubscriptionsUsage2001
+func (t *SubscriptionsUsage200) MergeSubscriptionsUsage2001(v SubscriptionsUsage2001) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSubscriptionsUsage2002 returns the union data inside the SubscriptionsUsage200 as a SubscriptionsUsage2002
+func (t SubscriptionsUsage200) AsSubscriptionsUsage2002() (SubscriptionsUsage2002, error) {
+	var body SubscriptionsUsage2002
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSubscriptionsUsage2002 overwrites any union data inside the SubscriptionsUsage200 as the provided SubscriptionsUsage2002
+func (t *SubscriptionsUsage200) FromSubscriptionsUsage2002(v SubscriptionsUsage2002) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSubscriptionsUsage2002 performs a merge with any union data inside the SubscriptionsUsage200, using the provided SubscriptionsUsage2002
+func (t *SubscriptionsUsage200) MergeSubscriptionsUsage2002(v SubscriptionsUsage2002) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSubscriptionsUsage2003 returns the union data inside the SubscriptionsUsage200 as a SubscriptionsUsage2003
+func (t SubscriptionsUsage200) AsSubscriptionsUsage2003() (SubscriptionsUsage2003, error) {
+	var body SubscriptionsUsage2003
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSubscriptionsUsage2003 overwrites any union data inside the SubscriptionsUsage200 as the provided SubscriptionsUsage2003
+func (t *SubscriptionsUsage200) FromSubscriptionsUsage2003(v SubscriptionsUsage2003) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSubscriptionsUsage2003 performs a merge with any union data inside the SubscriptionsUsage200, using the provided SubscriptionsUsage2003
+func (t *SubscriptionsUsage200) MergeSubscriptionsUsage2003(v SubscriptionsUsage2003) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t SubscriptionsUsage200) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *SubscriptionsUsage200) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -1390,6 +2636,141 @@ func newWorkspaceAccessDenyRequestRequest(server string, workspaceId string, req
 	return req, nil
 }
 
+// newBillingCheckoutRequest calls the generic BillingCheckout builder with application/json body
+func newBillingCheckoutRequest(server string, workspaceId string, body BillingCheckoutJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newBillingCheckoutRequestWithBody(server, workspaceId, "application/json", bodyReader)
+}
+
+// newBillingCheckoutRequestWithBody constructs an http.Request for the BillingCheckout method, with any body, and a specified content type
+func newBillingCheckoutRequestWithBody(server string, workspaceId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/billing/checkout", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newBillingPortalRequest calls the generic BillingPortal builder with application/json body
+func newBillingPortalRequest(server string, workspaceId string, body BillingPortalJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newBillingPortalRequestWithBody(server, workspaceId, "application/json", bodyReader)
+}
+
+// newBillingPortalRequestWithBody constructs an http.Request for the BillingPortal method, with any body, and a specified content type
+func newBillingPortalRequestWithBody(server string, workspaceId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/billing/portal", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newIntegrationsConnectRequest constructs an http.Request for the IntegrationsConnect method
+func newIntegrationsConnectRequest(server string, workspaceId string, integration IntegrationsConnectParamsIntegration) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "integration", integration, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/integrations/%s/connect", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // newWorkspaceAccessCreateInviteRequest calls the generic WorkspaceAccessCreateInvite builder with application/json body
 func newWorkspaceAccessCreateInviteRequest(server string, workspaceId string, body WorkspaceAccessCreateInviteJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -1672,6 +3053,1072 @@ func newWorkspaceAccessTransferOwnerRequest(server string, workspaceId string, m
 	}
 
 	operationPath := fmt.Sprintf("/v1/workspaces/%s/memberships/%s/transfer", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newWorkspaceModelsListKeysRequest constructs an http.Request for the WorkspaceModelsListKeys method
+func newWorkspaceModelsListKeysRequest(server string, workspaceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/model-credentials", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newWorkspaceModelsAddKeyRequest calls the generic WorkspaceModelsAddKey builder with application/json body
+func newWorkspaceModelsAddKeyRequest(server string, workspaceId string, body WorkspaceModelsAddKeyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newWorkspaceModelsAddKeyRequestWithBody(server, workspaceId, "application/json", bodyReader)
+}
+
+// newWorkspaceModelsAddKeyRequestWithBody constructs an http.Request for the WorkspaceModelsAddKey method, with any body, and a specified content type
+func newWorkspaceModelsAddKeyRequestWithBody(server string, workspaceId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/model-credentials", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newWorkspaceModelsRemoveKeyRequest constructs an http.Request for the WorkspaceModelsRemoveKey method
+func newWorkspaceModelsRemoveKeyRequest(server string, workspaceId string, provider WorkspaceModelsRemoveKeyParamsProvider) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "provider", provider, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/model-credentials/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newWorkspaceModelsClearDefaultRequest constructs an http.Request for the WorkspaceModelsClearDefault method
+func newWorkspaceModelsClearDefaultRequest(server string, workspaceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/model-default", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newWorkspaceModelsGetDefaultRequest constructs an http.Request for the WorkspaceModelsGetDefault method
+func newWorkspaceModelsGetDefaultRequest(server string, workspaceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/model-default", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newWorkspaceModelsSetDefaultRequest calls the generic WorkspaceModelsSetDefault builder with application/json body
+func newWorkspaceModelsSetDefaultRequest(server string, workspaceId string, body WorkspaceModelsSetDefaultJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newWorkspaceModelsSetDefaultRequestWithBody(server, workspaceId, "application/json", bodyReader)
+}
+
+// newWorkspaceModelsSetDefaultRequestWithBody constructs an http.Request for the WorkspaceModelsSetDefault method, with any body, and a specified content type
+func newWorkspaceModelsSetDefaultRequestWithBody(server string, workspaceId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/model-default", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newBillingStatusRequest constructs an http.Request for the BillingStatus method
+func newBillingStatusRequest(server string, workspaceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/plan-status", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newReposGetCapabilityRequestsRequest constructs an http.Request for the ReposGetCapabilityRequests method
+func newReposGetCapabilityRequestsRequest(server string, workspaceId string, repoId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "repoId", repoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/repos/%s/capability-requests", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newReposPreflightRequest calls the generic ReposPreflight builder with application/json body
+func newReposPreflightRequest(server string, workspaceId string, repoId string, body ReposPreflightJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newReposPreflightRequestWithBody(server, workspaceId, repoId, "application/json", bodyReader)
+}
+
+// newReposPreflightRequestWithBody constructs an http.Request for the ReposPreflight method, with any body, and a specified content type
+func newReposPreflightRequestWithBody(server string, workspaceId string, repoId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "repoId", repoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/repos/%s/config-preflight", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newReposGetEnvironmentRequest constructs an http.Request for the ReposGetEnvironment method
+func newReposGetEnvironmentRequest(server string, workspaceId string, repoId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "repoId", repoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/repos/%s/environment", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newReposListSecretsRequest constructs an http.Request for the ReposListSecrets method
+func newReposListSecretsRequest(server string, workspaceId string, repoId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "repoId", repoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/repos/%s/secrets", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newReposDeleteSecretRequest constructs an http.Request for the ReposDeleteSecret method
+func newReposDeleteSecretRequest(server string, workspaceId string, repoId string, name string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "repoId", repoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithOptions("simple", false, "name", name, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/repos/%s/secrets/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newReposPatchSecretRequest calls the generic ReposPatchSecret builder with application/json body
+func newReposPatchSecretRequest(server string, workspaceId string, repoId string, name string, body ReposPatchSecretJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newReposPatchSecretRequestWithBody(server, workspaceId, repoId, name, "application/json", bodyReader)
+}
+
+// newReposPatchSecretRequestWithBody constructs an http.Request for the ReposPatchSecret method, with any body, and a specified content type
+func newReposPatchSecretRequestWithBody(server string, workspaceId string, repoId string, name string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "repoId", repoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithOptions("simple", false, "name", name, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/repos/%s/secrets/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newReposPutSecretRequest calls the generic ReposPutSecret builder with application/json body
+func newReposPutSecretRequest(server string, workspaceId string, repoId string, name string, body ReposPutSecretJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newReposPutSecretRequestWithBody(server, workspaceId, repoId, name, "application/json", bodyReader)
+}
+
+// newReposPutSecretRequestWithBody constructs an http.Request for the ReposPutSecret method, with any body, and a specified content type
+func newReposPutSecretRequestWithBody(server string, workspaceId string, repoId string, name string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "repoId", repoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithOptions("simple", false, "name", name, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/repos/%s/secrets/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newReposGetConfigRequest constructs an http.Request for the ReposGetConfig method
+func newReposGetConfigRequest(server string, workspaceId string, repoId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "repoId", repoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/repos/%s/sinatrarc", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newReposClearOverrideRequest constructs an http.Request for the ReposClearOverride method
+func newReposClearOverrideRequest(server string, workspaceId string, repoId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "repoId", repoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/repos/%s/user-override", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newReposSetOverrideRequest calls the generic ReposSetOverride builder with application/json body
+func newReposSetOverrideRequest(server string, workspaceId string, repoId string, body ReposSetOverrideJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newReposSetOverrideRequestWithBody(server, workspaceId, repoId, "application/json", bodyReader)
+}
+
+// newReposSetOverrideRequestWithBody constructs an http.Request for the ReposSetOverride method, with any body, and a specified content type
+func newReposSetOverrideRequestWithBody(server string, workspaceId string, repoId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "repoId", repoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/repos/%s/user-override", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newSubscriptionsListRequest constructs an http.Request for the SubscriptionsList method
+func newSubscriptionsListRequest(server string, workspaceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/subscriptions", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newSubscriptionsCompleteRequest calls the generic SubscriptionsComplete builder with application/json body
+func newSubscriptionsCompleteRequest(server string, workspaceId string, body SubscriptionsCompleteJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newSubscriptionsCompleteRequestWithBody(server, workspaceId, "application/json", bodyReader)
+}
+
+// newSubscriptionsCompleteRequestWithBody constructs an http.Request for the SubscriptionsComplete method, with any body, and a specified content type
+func newSubscriptionsCompleteRequestWithBody(server string, workspaceId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/subscriptions/claude/complete", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newSubscriptionsRemoveRequest constructs an http.Request for the SubscriptionsRemove method
+func newSubscriptionsRemoveRequest(server string, workspaceId string, connectionId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "connectionId", connectionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/subscriptions/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newSubscriptionsUpdateRequest calls the generic SubscriptionsUpdate builder with application/json body
+func newSubscriptionsUpdateRequest(server string, workspaceId string, connectionId string, body SubscriptionsUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newSubscriptionsUpdateRequestWithBody(server, workspaceId, connectionId, "application/json", bodyReader)
+}
+
+// newSubscriptionsUpdateRequestWithBody constructs an http.Request for the SubscriptionsUpdate method, with any body, and a specified content type
+func newSubscriptionsUpdateRequestWithBody(server string, workspaceId string, connectionId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "connectionId", connectionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/subscriptions/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newSubscriptionsUsageRequest constructs an http.Request for the SubscriptionsUsage method
+func newSubscriptionsUsageRequest(server string, workspaceId string, connectionId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "connectionId", connectionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/subscriptions/%s/usage", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newSubscriptionsPollRequest calls the generic SubscriptionsPoll builder with application/json body
+func newSubscriptionsPollRequest(server string, workspaceId string, provider SubscriptionsPollParamsProvider, body SubscriptionsPollJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newSubscriptionsPollRequestWithBody(server, workspaceId, provider, "application/json", bodyReader)
+}
+
+// newSubscriptionsPollRequestWithBody constructs an http.Request for the SubscriptionsPoll method, with any body, and a specified content type
+func newSubscriptionsPollRequestWithBody(server string, workspaceId string, provider SubscriptionsPollParamsProvider, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "provider", provider, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/subscriptions/%s/poll", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newSubscriptionsStartRequest constructs an http.Request for the SubscriptionsStart method
+func newSubscriptionsStartRequest(server string, workspaceId string, provider SubscriptionsStartParamsProvider) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "provider", provider, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/subscriptions/%s/start", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
