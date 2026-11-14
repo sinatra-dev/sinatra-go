@@ -83,6 +83,48 @@ func (e DelegateTicketResponseOk) Valid() bool {
 	}
 }
 
+// Defines values for RepoExternalPrReviewsReviewExternalPrs.
+const (
+	RepoExternalPrReviewsReviewExternalPrsInherit RepoExternalPrReviewsReviewExternalPrs = "inherit"
+	RepoExternalPrReviewsReviewExternalPrsOff     RepoExternalPrReviewsReviewExternalPrs = "off"
+	RepoExternalPrReviewsReviewExternalPrsOn      RepoExternalPrReviewsReviewExternalPrs = "on"
+)
+
+// Valid indicates whether the value is a known member of the RepoExternalPrReviewsReviewExternalPrs enum.
+func (e RepoExternalPrReviewsReviewExternalPrs) Valid() bool {
+	switch e {
+	case RepoExternalPrReviewsReviewExternalPrsInherit:
+		return true
+	case RepoExternalPrReviewsReviewExternalPrsOff:
+		return true
+	case RepoExternalPrReviewsReviewExternalPrsOn:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RepoExternalPrReviewsRequestReviewExternalPrs.
+const (
+	RepoExternalPrReviewsRequestReviewExternalPrsInherit RepoExternalPrReviewsRequestReviewExternalPrs = "inherit"
+	RepoExternalPrReviewsRequestReviewExternalPrsOff     RepoExternalPrReviewsRequestReviewExternalPrs = "off"
+	RepoExternalPrReviewsRequestReviewExternalPrsOn      RepoExternalPrReviewsRequestReviewExternalPrs = "on"
+)
+
+// Valid indicates whether the value is a known member of the RepoExternalPrReviewsRequestReviewExternalPrs enum.
+func (e RepoExternalPrReviewsRequestReviewExternalPrs) Valid() bool {
+	switch e {
+	case RepoExternalPrReviewsRequestReviewExternalPrsInherit:
+		return true
+	case RepoExternalPrReviewsRequestReviewExternalPrsOff:
+		return true
+	case RepoExternalPrReviewsRequestReviewExternalPrsOn:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for StopTaskResponseAccepted.
 const (
 	StopTaskResponseAcceptedTrue StopTaskResponseAccepted = true
@@ -552,6 +594,18 @@ type CreateTaskResponse struct {
 	Task Task `json:"task"`
 }
 
+// CreateWorkspaceRequest The workspace to create.
+type CreateWorkspaceRequest struct {
+	// Name The workspace's name. Surrounding spaces are trimmed and runs of spaces become one; what remains must be 1 to 120 letters, numbers, spaces and basic punctuation, with no web address or email address.
+	Name string `json:"name"`
+}
+
+// CreateWorkspaceResponse The workspace you created.
+type CreateWorkspaceResponse struct {
+	// Workspace A workspace you belong to.
+	Workspace Workspace `json:"workspace"`
+}
+
 // DelegateGithubTicket A GitHub issue to delegate, by its repository and number.
 type DelegateGithubTicket struct {
 	// Number The issue's number in that repository.
@@ -607,7 +661,7 @@ type ErrorBody struct {
 	// BillingUrl The settings section that fixes the refusal: your model credentials or billing, on `payment_required`; billing, when starting a task, on `capacity_full`.
 	BillingUrl *string `json:"billingUrl,omitempty"`
 
-	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`.
+	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `workspace_limit`.
 	Error string `json:"error"`
 
 	// MessageId On `unavailable`: the message that was saved but not sent yet. Retry with it as the `Idempotency-Key`.
@@ -711,7 +765,9 @@ type RepoCapabilityRequests struct {
 		CreatedAt             time.Time   `json:"createdAt"`
 		EnvVarName            *string     `json:"envVarName"`
 		Evidence              interface{} `json:"evidence"`
+		ExpiredAt             *time.Time  `json:"expiredAt"`
 		Id                    string      `json:"id"`
+		LastReportedAt        *time.Time  `json:"lastReportedAt"`
 		NotificationBatchKeys []string    `json:"notificationBatchKeys"`
 		NotifiedGeneration    float32     `json:"notifiedGeneration"`
 		NotifiedRecipientIds  []string    `json:"notifiedRecipientIds"`
@@ -803,6 +859,25 @@ type RepoEnvironment struct {
 		VersionId  *string    `json:"versionId"`
 	} `json:"updates"`
 }
+
+// RepoExternalPrReviews defines model for RepoExternalPrReviews.
+type RepoExternalPrReviews struct {
+	// Enabled The effective setting after applying the repository override to the workspace default.
+	Enabled           bool                                   `json:"enabled"`
+	ReviewExternalPrs RepoExternalPrReviewsReviewExternalPrs `json:"reviewExternalPrs"`
+}
+
+// RepoExternalPrReviewsReviewExternalPrs defines model for RepoExternalPrReviews.ReviewExternalPrs.
+type RepoExternalPrReviewsReviewExternalPrs string
+
+// RepoExternalPrReviewsRequest defines model for RepoExternalPrReviewsRequest.
+type RepoExternalPrReviewsRequest struct {
+	// ReviewExternalPrs inherit uses the workspace default; on and off override it. Defaults to inherit.
+	ReviewExternalPrs RepoExternalPrReviewsRequestReviewExternalPrs `json:"reviewExternalPrs"`
+}
+
+// RepoExternalPrReviewsRequestReviewExternalPrs inherit uses the workspace default; on and off override it. Defaults to inherit.
+type RepoExternalPrReviewsRequestReviewExternalPrs string
 
 // RepoOverrideRequest defines model for RepoOverrideRequest.
 type RepoOverrideRequest struct {
@@ -1045,6 +1120,12 @@ type WorkspaceAccessOk struct {
 
 // WorkspaceAccessOkOk defines model for WorkspaceAccessOk.Ok.
 type WorkspaceAccessOkOk bool
+
+// WorkspaceExternalPrReviews defines model for WorkspaceExternalPrReviews.
+type WorkspaceExternalPrReviews struct {
+	// ReviewExternalPrs The workspace default for external pull request reviews. Defaults to false.
+	ReviewExternalPrs bool `json:"reviewExternalPrs"`
+}
 
 // WorkspaceGrantRoleRequest defines model for WorkspaceGrantRoleRequest.
 type WorkspaceGrantRoleRequest struct {
@@ -1583,6 +1664,9 @@ type TicketsSearchParams struct {
 // MeUpdateEmailPreferencesJSONRequestBody defines body for MeUpdateEmailPreferences for application/json ContentType.
 type MeUpdateEmailPreferencesJSONRequestBody = UpdateEmailPreferencesRequest
 
+// WorkspacesCreateJSONRequestBody defines body for WorkspacesCreate for application/json ContentType.
+type WorkspacesCreateJSONRequestBody = CreateWorkspaceRequest
+
 // WorkspaceAccessApproveRequestJSONRequestBody defines body for WorkspaceAccessApproveRequest for application/json ContentType.
 type WorkspaceAccessApproveRequestJSONRequestBody = WorkspaceGrantRoleRequest
 
@@ -1607,6 +1691,9 @@ type WorkspaceModelsSetDefaultJSONRequestBody = WorkspaceModelSelection
 // ReposPreflightJSONRequestBody defines body for ReposPreflight for application/json ContentType.
 type ReposPreflightJSONRequestBody = RepoOverrideRequest
 
+// RepositoriesSetReviewExternalPrsJSONRequestBody defines body for RepositoriesSetReviewExternalPrs for application/json ContentType.
+type RepositoriesSetReviewExternalPrsJSONRequestBody = RepoExternalPrReviewsRequest
+
 // ReposPatchSecretJSONRequestBody defines body for ReposPatchSecret for application/json ContentType.
 type ReposPatchSecretJSONRequestBody = RepoSecretPatchRequest
 
@@ -1615,6 +1702,9 @@ type ReposPutSecretJSONRequestBody = RepoSecretPutRequest
 
 // ReposSetOverrideJSONRequestBody defines body for ReposSetOverride for application/json ContentType.
 type ReposSetOverrideJSONRequestBody = RepoOverrideRequest
+
+// WorkspacesSetReviewExternalPrsJSONRequestBody defines body for WorkspacesSetReviewExternalPrs for application/json ContentType.
+type WorkspacesSetReviewExternalPrsJSONRequestBody = WorkspaceExternalPrReviews
 
 // SubscriptionsCompleteJSONRequestBody defines body for SubscriptionsComplete for application/json ContentType.
 type SubscriptionsCompleteJSONRequestBody = SubscriptionsCompleteRequest
@@ -2469,6 +2559,46 @@ func newMeRevokeTokenRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// newWorkspacesCreateRequest calls the generic WorkspacesCreate builder with application/json body
+func newWorkspacesCreateRequest(server string, body WorkspacesCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newWorkspacesCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// newWorkspacesCreateRequestWithBody constructs an http.Request for the WorkspacesCreate method, with any body, and a specified content type
+func newWorkspacesCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -3477,6 +3607,101 @@ func newReposGetEnvironmentRequest(server string, workspaceId string, repoId str
 	return req, nil
 }
 
+// newRepositoriesGetReviewExternalPrsRequest constructs an http.Request for the RepositoriesGetReviewExternalPrs method
+func newRepositoriesGetReviewExternalPrsRequest(server string, workspaceId string, repoId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "repoId", repoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/repos/%s/review-external-prs", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newRepositoriesSetReviewExternalPrsRequest calls the generic RepositoriesSetReviewExternalPrs builder with application/json body
+func newRepositoriesSetReviewExternalPrsRequest(server string, workspaceId string, repoId string, body RepositoriesSetReviewExternalPrsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newRepositoriesSetReviewExternalPrsRequestWithBody(server, workspaceId, repoId, "application/json", bodyReader)
+}
+
+// newRepositoriesSetReviewExternalPrsRequestWithBody constructs an http.Request for the RepositoriesSetReviewExternalPrs method, with any body, and a specified content type
+func newRepositoriesSetReviewExternalPrsRequestWithBody(server string, workspaceId string, repoId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "repoId", repoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/repos/%s/review-external-prs", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // newReposListSecretsRequest constructs an http.Request for the ReposListSecrets method
 func newReposListSecretsRequest(server string, workspaceId string, repoId string) (*http.Request, error) {
 	var err error
@@ -3805,6 +4030,87 @@ func newReposSetOverrideRequestWithBody(server string, workspaceId string, repoI
 	}
 
 	operationPath := fmt.Sprintf("/v1/workspaces/%s/repos/%s/user-override", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newWorkspacesGetReviewExternalPrsRequest constructs an http.Request for the WorkspacesGetReviewExternalPrs method
+func newWorkspacesGetReviewExternalPrsRequest(server string, workspaceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/review-external-prs", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newWorkspacesSetReviewExternalPrsRequest calls the generic WorkspacesSetReviewExternalPrs builder with application/json body
+func newWorkspacesSetReviewExternalPrsRequest(server string, workspaceId string, body WorkspacesSetReviewExternalPrsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newWorkspacesSetReviewExternalPrsRequestWithBody(server, workspaceId, "application/json", bodyReader)
+}
+
+// newWorkspacesSetReviewExternalPrsRequestWithBody constructs an http.Request for the WorkspacesSetReviewExternalPrs method, with any body, and a specified content type
+func newWorkspacesSetReviewExternalPrsRequestWithBody(server string, workspaceId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/review-external-prs", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
