@@ -1778,7 +1778,7 @@
           "Integrations"
         ],
         "summary": "Get an integration browser handoff",
-        "description": "Returns the dashboard page to connect GitHub, Linear, Slack or Buzz, or your Telegram account-link page. GitHub, Linear, Slack and Buzz require a current workspace owner or admin; Telegram linking is available to members when configured. This request never starts OAuth, creates state or returns credentials. Poll the workspace overview for status; Buzz stays pending_owner until a community owner or admin links their Buzz account. Telegram connected describes your personal account link independently of workspace enablement.",
+        "description": "Returns the dashboard page to connect GitHub, Linear or Slack, or your Telegram account-link page. GitHub, Linear and Slack require a current workspace owner or admin; Telegram linking is available to members when configured. This request never starts OAuth, creates state or returns credentials. Poll the workspace overview for status. Telegram connected describes your personal account link independently of workspace enablement.",
         "parameters": [
           {
             "name": "workspaceId",
@@ -1793,15 +1793,14 @@
             "name": "integration",
             "in": "path",
             "required": true,
-            "description": "The integration to connect: github, linear, slack, telegram or buzz. Buzz is not available yet.",
+            "description": "The integration to connect: github, linear, slack or telegram.",
             "schema": {
               "type": "string",
               "enum": [
                 "github",
                 "linear",
                 "slack",
-                "telegram",
-                "buzz"
+                "telegram"
               ]
             }
           }
@@ -1823,7 +1822,7 @@
             }
           },
           "400": {
-            "description": "Bad request. The `error` code says which:\n\n- `unsupported_integration`: Choose github, linear, slack, telegram or buzz.",
+            "description": "Bad request. The `error` code says which:\n\n- `unsupported_integration`: Choose github, linear, slack or telegram.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -1856,7 +1855,7 @@
             }
           },
           "403": {
-            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only a current workspace owner or admin can connect GitHub, Linear, Slack or Buzz. Members may link their personal Telegram account.",
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only a current workspace owner or admin can connect GitHub, Linear or Slack. Members may link their personal Telegram account.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -1871,373 +1870,7 @@
             }
           },
           "404": {
-            "description": "Not found. The `error` code says which:\n\n- `buzz_unavailable`: Buzz rollout is disabled for this workspace or the platform bot is not configured.\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.\n- `slack_disabled`: Slack connections are disabled on this deployment.\n- `telegram_unavailable`: Telegram Login is not configured.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST, PUT, PATCH or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              },
-              "Retry-After": {
-                "$ref": "#/components/headers/RetryAfter"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/workspaces/{workspaceId}/integrations/buzz": {
-      "post": {
-        "operationId": "integrations.connectBuzzCommunity",
-        "tags": [
-          "Integrations"
-        ],
-        "summary": "Connect a Buzz community",
-        "description": "Workspace owners and admins can join a hosted Buzz community using its invite URL. Requires the Buzz rollout and configured platform bot. Returns pending_owner; a community owner or admin must link their Buzz account before tasks can start. The invite URL and invite code are never retained or returned.",
-        "parameters": [
-          {
-            "name": "workspaceId",
-            "in": "path",
-            "required": true,
-            "description": "The workspace's id, from `GET /v1/me`.",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BuzzCommunityConnectRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The community joined, awaiting owner/admin account proof.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BuzzCommunityConnect"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.\n- `buzz_invalid_invite`: The invite is invalid or expired. Ask a community admin for a new one.\n- `buzz_join_refused`: Buzz refused bot access. Ask a community admin for a new invite.\n- `buzz_policy_required`: Buzz requires a new join policy. Ask a community admin for a fresh invite.\n- `invalid_invite_url`: Use an HTTPS invite URL on a hosted name.communities.buzz.xyz community.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              },
-              "WWW-Authenticate": {
-                "$ref": "#/components/headers/WWWAuthenticate"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Your workspace role can't do this.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found. The `error` code says which:\n\n- `buzz_unavailable`: Buzz rollout is disabled for this workspace or the platform bot is not configured.\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict. The `error` code says which:\n\n- `buzz_already_connected`: This community is already connected to another Sinatra workspace.\n- `buzz_connection_exists`: Disconnect the workspace's current Buzz community before connecting another.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "413": {
-            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "415": {
-            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST, PUT, PATCH or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              },
-              "Retry-After": {
-                "$ref": "#/components/headers/RetryAfter"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "502": {
-            "description": "Bad gateway. The `error` code says which:\n\n- `buzz_connect_failed`: Sinatra could not join Buzz. Check the invite and try again.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "operationId": "integrations.disconnectBuzzCommunity",
-        "tags": [
-          "Integrations"
-        ],
-        "summary": "Disconnect a Buzz community",
-        "description": "Workspace owners and admins can remove the Buzz community connection. Requires the Buzz rollout and configured platform bot.",
-        "parameters": [
-          {
-            "name": "workspaceId",
-            "in": "path",
-            "required": true,
-            "description": "The workspace's id, from `GET /v1/me`.",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The workspace community connection was removed.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BuzzCommunityDisconnect"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              },
-              "WWW-Authenticate": {
-                "$ref": "#/components/headers/WWWAuthenticate"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Your workspace role can't do this.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found. The `error` code says which:\n\n- `buzz_unavailable`: Buzz rollout is disabled for this workspace or the platform bot is not configured.\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "413": {
-            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
-            "headers": {
-              "x-request-id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "415": {
-            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.\n- `slack_disabled`: Slack connections are disabled on this deployment.\n- `telegram_unavailable`: Telegram Login is not configured.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -9632,49 +9265,6 @@
         "type": "object",
         "properties": {}
       },
-      "BuzzCommunityConnect": {
-        "type": "object",
-        "properties": {
-          "host": {
-            "type": "string",
-            "description": "The normalized Buzz community host."
-          },
-          "status": {
-            "type": "string",
-            "const": "pending_owner",
-            "description": "A community owner or admin must link their Buzz account before tasks can start."
-          }
-        },
-        "required": [
-          "host",
-          "status"
-        ]
-      },
-      "BuzzCommunityConnectRequest": {
-        "type": "object",
-        "properties": {
-          "inviteUrl": {
-            "type": "string",
-            "description": "The Buzz community invite URL. Used only for joining; never retained or returned."
-          }
-        },
-        "required": [
-          "inviteUrl"
-        ],
-        "additionalProperties": false
-      },
-      "BuzzCommunityDisconnect": {
-        "type": "object",
-        "properties": {
-          "ok": {
-            "type": "boolean",
-            "const": true
-          }
-        },
-        "required": [
-          "ok"
-        ]
-      },
       "CreateMessageRequest": {
         "type": "object",
         "properties": {
@@ -9899,7 +9489,7 @@
         "properties": {
           "error": {
             "type": "string",
-            "description": "A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `buzz_already_connected`, `buzz_connect_failed`, `buzz_connection_exists`, `buzz_invalid_invite`, `buzz_join_refused`, `buzz_policy_required`, `buzz_unavailable`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_invite_url`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `workspace_limit`."
+            "description": "A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `workspace_limit`."
           },
           "reason": {
             "description": "A sentence saying what went wrong and, where it helps, what to do. Written to show to a person.",
@@ -10992,7 +10582,7 @@
           },
           "source": {
             "type": "string",
-            "description": "Where the task started: `api` for the CLI, MCP, this API or the dashboard, `linear` or `github_issue` for an issue, `slack`, `telegram` or `buzz` for a chat. Other sources can appear, so treat an unknown value as a task started elsewhere."
+            "description": "Where the task started: `api` for the CLI, MCP, this API or the dashboard, `linear` or `github_issue` for an issue, `slack` or `telegram` for a chat. Other sources can appear, so treat an unknown value as a task started elsewhere."
           },
           "title": {
             "anyOf": [
@@ -12017,47 +11607,6 @@
               "connected"
             ]
           },
-          "buzz": {
-            "type": "object",
-            "properties": {
-              "available": {
-                "type": "boolean"
-              },
-              "connected": {
-                "type": "boolean"
-              },
-              "host": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
-              "status": {
-                "anyOf": [
-                  {
-                    "type": "string",
-                    "enum": [
-                      "pending_owner",
-                      "connected"
-                    ]
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              }
-            },
-            "required": [
-              "available",
-              "connected",
-              "host",
-              "status"
-            ]
-          },
           "repos": {
             "type": "array",
             "items": {
@@ -12205,7 +11754,6 @@
           "linear",
           "slack",
           "telegram",
-          "buzz",
           "repos",
           "repoCatalog",
           "planStatus",

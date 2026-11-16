@@ -38,36 +38,6 @@ func (e BillingCheckoutRequestPlan) Valid() bool {
 	}
 }
 
-// Defines values for BuzzCommunityConnectStatus.
-const (
-	BuzzCommunityConnectStatusPendingOwner BuzzCommunityConnectStatus = "pending_owner"
-)
-
-// Valid indicates whether the value is a known member of the BuzzCommunityConnectStatus enum.
-func (e BuzzCommunityConnectStatus) Valid() bool {
-	switch e {
-	case BuzzCommunityConnectStatusPendingOwner:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for BuzzCommunityDisconnectOk.
-const (
-	BuzzCommunityDisconnectOkTrue BuzzCommunityDisconnectOk = true
-)
-
-// Valid indicates whether the value is a known member of the BuzzCommunityDisconnectOk enum.
-func (e BuzzCommunityDisconnectOk) Valid() bool {
-	switch e {
-	case BuzzCommunityDisconnectOkTrue:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for DelegateGithubTicketSource.
 const (
 	DelegateGithubTicketSourceGithub DelegateGithubTicketSource = "github"
@@ -251,24 +221,6 @@ func (e WorkspaceModelKeyRequestProvider) Valid() bool {
 	case WorkspaceModelKeyRequestProviderAnthropic:
 		return true
 	case WorkspaceModelKeyRequestProviderOpenrouter:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for WorkspaceOverviewBuzzStatus.
-const (
-	WorkspaceOverviewBuzzStatusConnected    WorkspaceOverviewBuzzStatus = "connected"
-	WorkspaceOverviewBuzzStatusPendingOwner WorkspaceOverviewBuzzStatus = "pending_owner"
-)
-
-// Valid indicates whether the value is a known member of the WorkspaceOverviewBuzzStatus enum.
-func (e WorkspaceOverviewBuzzStatus) Valid() bool {
-	switch e {
-	case WorkspaceOverviewBuzzStatusConnected:
-		return true
-	case WorkspaceOverviewBuzzStatusPendingOwner:
 		return true
 	default:
 		return false
@@ -460,7 +412,6 @@ func (e SubscriptionsUsage2002OverallUnit) Valid() bool {
 
 // Defines values for IntegrationsConnectParamsIntegration.
 const (
-	IntegrationsConnectParamsIntegrationBuzz     IntegrationsConnectParamsIntegration = "buzz"
 	IntegrationsConnectParamsIntegrationGithub   IntegrationsConnectParamsIntegration = "github"
 	IntegrationsConnectParamsIntegrationLinear   IntegrationsConnectParamsIntegration = "linear"
 	IntegrationsConnectParamsIntegrationSlack    IntegrationsConnectParamsIntegration = "slack"
@@ -470,8 +421,6 @@ const (
 // Valid indicates whether the value is a known member of the IntegrationsConnectParamsIntegration enum.
 func (e IntegrationsConnectParamsIntegration) Valid() bool {
 	switch e {
-	case IntegrationsConnectParamsIntegrationBuzz:
-		return true
 	case IntegrationsConnectParamsIntegrationGithub:
 		return true
 	case IntegrationsConnectParamsIntegrationLinear:
@@ -627,32 +576,6 @@ type BillingHandoff struct {
 // BillingPortalRequest defines model for BillingPortalRequest.
 type BillingPortalRequest = map[string]interface{}
 
-// BuzzCommunityConnect defines model for BuzzCommunityConnect.
-type BuzzCommunityConnect struct {
-	// Host The normalized Buzz community host.
-	Host string `json:"host"`
-
-	// Status A community owner or admin must link their Buzz account before tasks can start.
-	Status BuzzCommunityConnectStatus `json:"status"`
-}
-
-// BuzzCommunityConnectStatus A community owner or admin must link their Buzz account before tasks can start.
-type BuzzCommunityConnectStatus string
-
-// BuzzCommunityConnectRequest defines model for BuzzCommunityConnectRequest.
-type BuzzCommunityConnectRequest struct {
-	// InviteUrl The Buzz community invite URL. Used only for joining; never retained or returned.
-	InviteUrl string `json:"inviteUrl"`
-}
-
-// BuzzCommunityDisconnect defines model for BuzzCommunityDisconnect.
-type BuzzCommunityDisconnect struct {
-	Ok BuzzCommunityDisconnectOk `json:"ok"`
-}
-
-// BuzzCommunityDisconnectOk defines model for BuzzCommunityDisconnect.Ok.
-type BuzzCommunityDisconnectOk bool
-
 // CreateMessageRequest A message to send on a task.
 type CreateMessageRequest struct {
 	// Text The message, up to 100,000 characters after trimming.
@@ -756,7 +679,7 @@ type ErrorBody struct {
 	// BillingUrl The settings section that fixes the refusal: your model credentials or billing, on `payment_required`; billing, when starting a task, on `capacity_full`.
 	BillingUrl *string `json:"billingUrl,omitempty"`
 
-	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `buzz_already_connected`, `buzz_connect_failed`, `buzz_connection_exists`, `buzz_invalid_invite`, `buzz_join_refused`, `buzz_policy_required`, `buzz_unavailable`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_invite_url`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `workspace_limit`.
+	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `workspace_limit`.
 	Error string `json:"error"`
 
 	// MessageId On `unavailable`: the message that was saved but not sent yet. Retry with it as the `Idempotency-Key`.
@@ -1079,7 +1002,7 @@ type Task struct {
 	// Repo `owner/name` of the task's repository. `null` until a repository is chosen.
 	Repo *string `json:"repo"`
 
-	// Source Where the task started: `api` for the CLI, MCP, this API or the dashboard, `linear` or `github_issue` for an issue, `slack`, `telegram` or `buzz` for a chat. Other sources can appear, so treat an unknown value as a task started elsewhere.
+	// Source Where the task started: `api` for the CLI, MCP, this API or the dashboard, `linear` or `github_issue` for an issue, `slack` or `telegram` for a chat. Other sources can appear, so treat an unknown value as a task started elsewhere.
 	Source string `json:"source"`
 
 	// Status Where the task is in its life, such as `pending`, `implementing`, `replied`, `pr_open` or `completed`. New statuses can appear, so don't treat the list as closed. See [Raw statuses](https://docs.sinatra.dev/docs/getting-started/how-it-works#raw-statuses) for each one.
@@ -1345,13 +1268,6 @@ type WorkspaceModelSelection struct {
 
 // WorkspaceOverview Read-only workspace overview, with the same member-visible data as the dashboard. No credentials or tokens.
 type WorkspaceOverview struct {
-	Buzz struct {
-		Available bool                         `json:"available"`
-		Connected bool                         `json:"connected"`
-		Host      *string                      `json:"host"`
-		Status    *WorkspaceOverviewBuzzStatus `json:"status"`
-	} `json:"buzz"`
-
 	// DefaultModel The workspace's saved model default, or null when unset. Personal and repository overrides aren't included.
 	DefaultModel *struct {
 		Effort *string `json:"effort,omitempty"`
@@ -1440,9 +1356,6 @@ type WorkspaceOverview struct {
 		Enabled   bool `json:"enabled"`
 	} `json:"telegram"`
 }
-
-// WorkspaceOverviewBuzzStatus defines model for WorkspaceOverview.Buzz.Status.
-type WorkspaceOverviewBuzzStatus string
 
 // WorkspaceOwnershipTransferred defines model for WorkspaceOwnershipTransferred.
 type WorkspaceOwnershipTransferred struct {
@@ -1812,9 +1725,6 @@ type BillingCheckoutJSONRequestBody = BillingCheckoutRequest
 
 // BillingPortalJSONRequestBody defines body for BillingPortal for application/json ContentType.
 type BillingPortalJSONRequestBody = BillingPortalRequest
-
-// IntegrationsConnectBuzzCommunityJSONRequestBody defines body for IntegrationsConnectBuzzCommunity for application/json ContentType.
-type IntegrationsConnectBuzzCommunityJSONRequestBody = BuzzCommunityConnectRequest
 
 // WorkspaceAccessCreateInviteJSONRequestBody defines body for WorkspaceAccessCreateInvite for application/json ContentType.
 type WorkspaceAccessCreateInviteJSONRequestBody = WorkspaceInviteCreateRequest
@@ -2981,87 +2891,6 @@ func newBillingPortalRequestWithBody(server string, workspaceId string, contentT
 	}
 
 	operationPath := fmt.Sprintf("/v1/workspaces/%s/billing/portal", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// newIntegrationsDisconnectBuzzCommunityRequest constructs an http.Request for the IntegrationsDisconnectBuzzCommunity method
-func newIntegrationsDisconnectBuzzCommunityRequest(server string, workspaceId string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/workspaces/%s/integrations/buzz", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// newIntegrationsConnectBuzzCommunityRequest calls the generic IntegrationsConnectBuzzCommunity builder with application/json body
-func newIntegrationsConnectBuzzCommunityRequest(server string, workspaceId string, body IntegrationsConnectBuzzCommunityJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return newIntegrationsConnectBuzzCommunityRequestWithBody(server, workspaceId, "application/json", bodyReader)
-}
-
-// newIntegrationsConnectBuzzCommunityRequestWithBody constructs an http.Request for the IntegrationsConnectBuzzCommunity method, with any body, and a specified content type
-func newIntegrationsConnectBuzzCommunityRequestWithBody(server string, workspaceId string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/workspaces/%s/integrations/buzz", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
