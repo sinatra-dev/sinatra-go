@@ -590,7 +590,7 @@ type CreateMessageResponse struct {
 
 // CreateTaskRequest A task to start.
 type CreateTaskRequest struct {
-	// Model A model from Sinatra's catalog, such as `anthropic/claude-opus-5-5` or `openai-codex/gpt-6.1-sol`, that every agent on the task runs on. The model picks its engine. Omit it to use the repository's or workspace's model.
+	// Model A model from Sinatra's catalog, such as `anthropic/claude-opus-5-5` or `openai-codex/gpt-6.1-sol`, that every agent on the task runs on. The model picks its engine. Omit it to use your default or the workspace default.
 	Model *string `json:"model,omitempty"`
 
 	// Prompt What to do, as you'd ask a teammate. Up to 100,000 characters, after trimming.
