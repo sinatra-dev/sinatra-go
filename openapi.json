@@ -2856,7 +2856,7 @@
           "Workspaces"
         ],
         "summary": "Read the external pull request review default",
-        "description": "Any current workspace member can read the workspace default. Returns 404 unless the external PR review rollout is enabled for this workspace or user. This setting does not start reviews.",
+        "description": "Any current workspace member can read the workspace default and pending GitHub installation permission update. Returns 404 unless the external PR review rollout is enabled for this workspace or user. This setting does not start reviews.",
         "parameters": [
           {
             "name": "workspaceId",
@@ -2870,7 +2870,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The workspace default, initially false.",
+            "description": "The workspace default, initially false, and pending permission update, if any.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -2975,14 +2975,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/WorkspaceExternalPrReviews"
+                "$ref": "#/components/schemas/WorkspaceExternalPrReviewsRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "The saved workspace default.",
+            "description": "The saved workspace default and pending permission update, if any.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -11149,6 +11149,44 @@
         ]
       },
       "WorkspaceExternalPrReviews": {
+        "type": "object",
+        "properties": {
+          "reviewExternalPrs": {
+            "type": "boolean",
+            "description": "The workspace default for external pull request reviews. Defaults to false."
+          },
+          "permissionsOutdatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the current GitHub installation permission-update episode was detected. Null when no permission update is pending."
+          },
+          "githubInstallationSettingsUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The exact GitHub installation settings page for approving updated permissions. Null when no permission update is pending."
+          }
+        },
+        "required": [
+          "reviewExternalPrs",
+          "permissionsOutdatedAt",
+          "githubInstallationSettingsUrl"
+        ]
+      },
+      "WorkspaceExternalPrReviewsRequest": {
         "type": "object",
         "properties": {
           "reviewExternalPrs": {

@@ -1173,6 +1173,18 @@ type WorkspaceAccessOkOk bool
 
 // WorkspaceExternalPrReviews defines model for WorkspaceExternalPrReviews.
 type WorkspaceExternalPrReviews struct {
+	// GithubInstallationSettingsUrl The exact GitHub installation settings page for approving updated permissions. Null when no permission update is pending.
+	GithubInstallationSettingsUrl *string `json:"githubInstallationSettingsUrl"`
+
+	// PermissionsOutdatedAt When the current GitHub installation permission-update episode was detected. Null when no permission update is pending.
+	PermissionsOutdatedAt *time.Time `json:"permissionsOutdatedAt"`
+
+	// ReviewExternalPrs The workspace default for external pull request reviews. Defaults to false.
+	ReviewExternalPrs bool `json:"reviewExternalPrs"`
+}
+
+// WorkspaceExternalPrReviewsRequest defines model for WorkspaceExternalPrReviewsRequest.
+type WorkspaceExternalPrReviewsRequest struct {
 	// ReviewExternalPrs The workspace default for external pull request reviews. Defaults to false.
 	ReviewExternalPrs bool `json:"reviewExternalPrs"`
 }
@@ -1754,7 +1766,7 @@ type ReposPutSecretJSONRequestBody = RepoSecretPutRequest
 type ReposSetOverrideJSONRequestBody = RepoOverrideRequest
 
 // WorkspacesSetReviewExternalPrsJSONRequestBody defines body for WorkspacesSetReviewExternalPrs for application/json ContentType.
-type WorkspacesSetReviewExternalPrsJSONRequestBody = WorkspaceExternalPrReviews
+type WorkspacesSetReviewExternalPrsJSONRequestBody = WorkspaceExternalPrReviewsRequest
 
 // SubscriptionsCompleteJSONRequestBody defines body for SubscriptionsComplete for application/json ContentType.
 type SubscriptionsCompleteJSONRequestBody = SubscriptionsCompleteRequest
