@@ -1771,6 +1771,188 @@
         }
       }
     },
+    "/v1/workspaces/{workspaceId}/repos/{repoId}/capability-requests/{requestId}/dismiss": {
+      "post": {
+        "operationId": "repos.dismissCapabilityRequest",
+        "tags": [
+          "Repositories"
+        ],
+        "summary": "Dismiss a repository capability request",
+        "description": "Owners and admins can durably dismiss a repository access request. Subsequent reports do not reopen a manually dismissed request. Requires repository environments to be enabled for the workspace.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repoId",
+            "in": "path",
+            "required": true,
+            "description": "The repository id from the repos data in GET /v1/workspaces/{workspaceId}.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "description": "The access request's id, from the workspace access snapshot.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request was dismissed.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepoCapabilityRequestDismissed"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Your workspace role can't do this.\n- `repo_environments_not_enabled`: Repository environments are not enabled for this workspace.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `capability_request_not_found`: The capability request does not exist in this repository.\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST, PUT, PATCH or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/workspaces/{workspaceId}/integrations/{integration}/connect": {
       "get": {
         "operationId": "integrations.connect",
@@ -9700,6 +9882,18 @@
         ],
         "description": "The pull request a task opened."
       },
+      "RepoCapabilityRequestDismissed": {
+        "type": "object",
+        "properties": {
+          "dismissed": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "dismissed"
+        ]
+      },
       "RepoCapabilityRequests": {
         "type": "object",
         "properties": {
@@ -9740,6 +9934,17 @@
                   "type": "string"
                 },
                 "evidence": {},
+                "secretSatisfiable": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "False when a host-bound HTTP header or token cannot satisfy the request; null is uncertain or historical."
+                },
                 "suppliedSecretId": {
                   "anyOf": [
                     {
@@ -9750,23 +9955,31 @@
                     }
                   ]
                 },
-                "repairGeneration": {
-                  "type": "number"
-                },
-                "notifiedGeneration": {
-                  "type": "number"
-                },
-                "notifiedRecipientIds": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "notificationBatchKeys": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
+                "remediation": {
+                  "type": "object",
+                  "properties": {
+                    "summary": {
+                      "type": "string"
+                    },
+                    "supplyCommand": {
+                      "type": "string"
+                    },
+                    "dismissCommand": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "note": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "summary",
+                    "dismissCommand",
+                    "note"
+                  ]
                 },
                 "lastReportedAt": {
                   "anyOf": [
@@ -9809,11 +10022,8 @@
                 "envVarName",
                 "state",
                 "evidence",
+                "secretSatisfiable",
                 "suppliedSecretId",
-                "repairGeneration",
-                "notifiedGeneration",
-                "notifiedRecipientIds",
-                "notificationBatchKeys",
                 "lastReportedAt",
                 "expiredAt",
                 "createdAt",
@@ -10492,6 +10702,16 @@
                           "repair_needed"
                         ]
                       },
+                      "secretSatisfiable": {
+                        "anyOf": [
+                          {
+                            "type": "boolean"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
                       "lastReportedAt": {
                         "anyOf": [
                           {
@@ -10530,6 +10750,7 @@
                       "reason",
                       "envVarName",
                       "state",
+                      "secretSatisfiable",
                       "lastReportedAt",
                       "expiredAt",
                       "createdAt",

@@ -83,6 +83,21 @@ func (e DelegateTicketResponseOk) Valid() bool {
 	}
 }
 
+// Defines values for RepoCapabilityRequestDismissedDismissed.
+const (
+	RepoCapabilityRequestDismissedDismissedTrue RepoCapabilityRequestDismissedDismissed = true
+)
+
+// Valid indicates whether the value is a known member of the RepoCapabilityRequestDismissedDismissed enum.
+func (e RepoCapabilityRequestDismissedDismissed) Valid() bool {
+	switch e {
+	case RepoCapabilityRequestDismissedDismissedTrue:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for RepoExternalPrReviewsReviewExternalPrs.
 const (
 	RepoExternalPrReviewsReviewExternalPrsInherit RepoExternalPrReviewsReviewExternalPrs = "inherit"
@@ -776,27 +791,41 @@ type PullRequest struct {
 	Url string `json:"url"`
 }
 
+// RepoCapabilityRequestDismissed defines model for RepoCapabilityRequestDismissed.
+type RepoCapabilityRequestDismissed struct {
+	Dismissed RepoCapabilityRequestDismissedDismissed `json:"dismissed"`
+}
+
+// RepoCapabilityRequestDismissedDismissed defines model for RepoCapabilityRequestDismissed.Dismissed.
+type RepoCapabilityRequestDismissedDismissed bool
+
 // RepoCapabilityRequests defines model for RepoCapabilityRequests.
 type RepoCapabilityRequests struct {
 	Requests []struct {
-		Capability            string      `json:"capability"`
-		CreatedAt             time.Time   `json:"createdAt"`
-		EnvVarName            *string     `json:"envVarName"`
-		Evidence              interface{} `json:"evidence"`
-		ExpiredAt             *time.Time  `json:"expiredAt"`
-		Id                    string      `json:"id"`
-		LastReportedAt        *time.Time  `json:"lastReportedAt"`
-		NotificationBatchKeys []string    `json:"notificationBatchKeys"`
-		NotifiedGeneration    float32     `json:"notifiedGeneration"`
-		NotifiedRecipientIds  []string    `json:"notifiedRecipientIds"`
-		Reason                string      `json:"reason"`
-		RepairGeneration      float32     `json:"repairGeneration"`
-		RepoId                string      `json:"repoId"`
-		State                 string      `json:"state"`
-		SuppliedSecretId      *string     `json:"suppliedSecretId"`
-		Target                string      `json:"target"`
-		UpdatedAt             time.Time   `json:"updatedAt"`
-		WorkspaceId           string      `json:"workspaceId"`
+		Capability     string      `json:"capability"`
+		CreatedAt      time.Time   `json:"createdAt"`
+		EnvVarName     *string     `json:"envVarName"`
+		Evidence       interface{} `json:"evidence"`
+		ExpiredAt      *time.Time  `json:"expiredAt"`
+		Id             string      `json:"id"`
+		LastReportedAt *time.Time  `json:"lastReportedAt"`
+		Reason         string      `json:"reason"`
+		Remediation    *struct {
+			DismissCommand string  `json:"dismissCommand"`
+			Note           string  `json:"note"`
+			Summary        string  `json:"summary"`
+			SupplyCommand  *string `json:"supplyCommand,omitempty"`
+			Url            *string `json:"url,omitempty"`
+		} `json:"remediation,omitempty"`
+		RepoId string `json:"repoId"`
+
+		// SecretSatisfiable False when a host-bound HTTP header or token cannot satisfy the request; null is uncertain or historical.
+		SecretSatisfiable *bool     `json:"secretSatisfiable"`
+		State             string    `json:"state"`
+		SuppliedSecretId  *string   `json:"suppliedSecretId"`
+		Target            string    `json:"target"`
+		UpdatedAt         time.Time `json:"updatedAt"`
+		WorkspaceId       string    `json:"workspaceId"`
 	} `json:"requests"`
 }
 
@@ -956,16 +985,17 @@ type RepoStatuses struct {
 		OpenRequestCount int    `json:"openRequestCount"`
 		RepoId           string `json:"repoId"`
 		Requests         []struct {
-			Capability     string                         `json:"capability"`
-			CreatedAt      time.Time                      `json:"createdAt"`
-			EnvVarName     *string                        `json:"envVarName"`
-			ExpiredAt      *time.Time                     `json:"expiredAt"`
-			Id             string                         `json:"id"`
-			LastReportedAt *time.Time                     `json:"lastReportedAt"`
-			Reason         string                         `json:"reason"`
-			State          RepoStatusesReposRequestsState `json:"state"`
-			Target         string                         `json:"target"`
-			UpdatedAt      time.Time                      `json:"updatedAt"`
+			Capability        string                         `json:"capability"`
+			CreatedAt         time.Time                      `json:"createdAt"`
+			EnvVarName        *string                        `json:"envVarName"`
+			ExpiredAt         *time.Time                     `json:"expiredAt"`
+			Id                string                         `json:"id"`
+			LastReportedAt    *time.Time                     `json:"lastReportedAt"`
+			Reason            string                         `json:"reason"`
+			SecretSatisfiable *bool                          `json:"secretSatisfiable"`
+			State             RepoStatusesReposRequestsState `json:"state"`
+			Target            string                         `json:"target"`
+			UpdatedAt         time.Time                      `json:"updatedAt"`
 		} `json:"requests"`
 	} `json:"repos"`
 }
@@ -3601,6 +3631,54 @@ func newReposGetCapabilityRequestsRequest(server string, workspaceId string, rep
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newReposDismissCapabilityRequestRequest constructs an http.Request for the ReposDismissCapabilityRequest method
+func newReposDismissCapabilityRequestRequest(server string, workspaceId string, repoId string, requestId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "repoId", repoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithOptions("simple", false, "requestId", requestId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/repos/%s/capability-requests/%s/dismiss", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
