@@ -812,7 +812,7 @@ type RepoCapabilityRequests struct {
 		Reason         string      `json:"reason"`
 		Remediation    *struct {
 			DismissCommand string  `json:"dismissCommand"`
-			Note           string  `json:"note"`
+			Note           *string `json:"note,omitempty"`
 			Summary        string  `json:"summary"`
 			SupplyCommand  *string `json:"supplyCommand,omitempty"`
 			Url            *string `json:"url,omitempty"`

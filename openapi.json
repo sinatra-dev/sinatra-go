@@ -9977,8 +9977,7 @@
                   },
                   "required": [
                     "summary",
-                    "dismissCommand",
-                    "note"
+                    "dismissCommand"
                   ]
                 },
                 "lastReportedAt": {
