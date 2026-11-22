@@ -38,6 +38,93 @@ func (e BillingCheckoutRequestPlan) Valid() bool {
 	}
 }
 
+// Defines values for ConnectorCatalogEntryAcknowledgementWarningSeverity.
+const (
+	ConnectorCatalogEntryAcknowledgementWarningSeverityCaution ConnectorCatalogEntryAcknowledgementWarningSeverity = "caution"
+	ConnectorCatalogEntryAcknowledgementWarningSeverityDanger  ConnectorCatalogEntryAcknowledgementWarningSeverity = "danger"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorCatalogEntryAcknowledgementWarningSeverity enum.
+func (e ConnectorCatalogEntryAcknowledgementWarningSeverity) Valid() bool {
+	switch e {
+	case ConnectorCatalogEntryAcknowledgementWarningSeverityCaution:
+		return true
+	case ConnectorCatalogEntryAcknowledgementWarningSeverityDanger:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorCatalogEntryAcknowledgementsOauthWarningSeverity.
+const (
+	ConnectorCatalogEntryAcknowledgementsOauthWarningSeverityCaution ConnectorCatalogEntryAcknowledgementsOauthWarningSeverity = "caution"
+	ConnectorCatalogEntryAcknowledgementsOauthWarningSeverityDanger  ConnectorCatalogEntryAcknowledgementsOauthWarningSeverity = "danger"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorCatalogEntryAcknowledgementsOauthWarningSeverity enum.
+func (e ConnectorCatalogEntryAcknowledgementsOauthWarningSeverity) Valid() bool {
+	switch e {
+	case ConnectorCatalogEntryAcknowledgementsOauthWarningSeverityCaution:
+		return true
+	case ConnectorCatalogEntryAcknowledgementsOauthWarningSeverityDanger:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorCatalogEntryAcknowledgementsTokenWarningSeverity.
+const (
+	ConnectorCatalogEntryAcknowledgementsTokenWarningSeverityCaution ConnectorCatalogEntryAcknowledgementsTokenWarningSeverity = "caution"
+	ConnectorCatalogEntryAcknowledgementsTokenWarningSeverityDanger  ConnectorCatalogEntryAcknowledgementsTokenWarningSeverity = "danger"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorCatalogEntryAcknowledgementsTokenWarningSeverity enum.
+func (e ConnectorCatalogEntryAcknowledgementsTokenWarningSeverity) Valid() bool {
+	switch e {
+	case ConnectorCatalogEntryAcknowledgementsTokenWarningSeverityCaution:
+		return true
+	case ConnectorCatalogEntryAcknowledgementsTokenWarningSeverityDanger:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorDisconnectedOk.
+const (
+	ConnectorDisconnectedOkTrue ConnectorDisconnectedOk = true
+)
+
+// Valid indicates whether the value is a known member of the ConnectorDisconnectedOk enum.
+func (e ConnectorDisconnectedOk) Valid() bool {
+	switch e {
+	case ConnectorDisconnectedOkTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorDisconnectedProviderRevocation.
+const (
+	ConnectorDisconnectedProviderRevocationFailed  ConnectorDisconnectedProviderRevocation = "failed"
+	ConnectorDisconnectedProviderRevocationRevoked ConnectorDisconnectedProviderRevocation = "revoked"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorDisconnectedProviderRevocation enum.
+func (e ConnectorDisconnectedProviderRevocation) Valid() bool {
+	switch e {
+	case ConnectorDisconnectedProviderRevocationFailed:
+		return true
+	case ConnectorDisconnectedProviderRevocationRevoked:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for DelegateGithubTicketSource.
 const (
 	DelegateGithubTicketSourceGithub DelegateGithubTicketSource = "github"
@@ -591,6 +678,260 @@ type BillingHandoff struct {
 // BillingPortalRequest defines model for BillingPortalRequest.
 type BillingPortalRequest = map[string]interface{}
 
+// ConnectorCatalogEntry A service whose hosted MCP server the workspace's agents can read through.
+type ConnectorCatalogEntry struct {
+	// Acknowledgement Deprecated: `acknowledgements.token`, or `acknowledgements.oauth` for a connector that has no pasted-token method.
+	Acknowledgement struct {
+		// Confirmations Statements the person confirms one by one, each with its own checkbox, before connecting.
+		Confirmations []string `json:"confirmations"`
+		Text          string   `json:"text"`
+
+		// Version Send it as `acknowledgementVersion` to confirm you accepted this text.
+		Version string `json:"version"`
+
+		// Warning Show it before the text. `null` when the provider enforces read-only access.
+		Warning *struct {
+			Body string `json:"body"`
+
+			// Items What an agent could do if the access allows it.
+			Items []string `json:"items"`
+
+			// Severity `danger` when the token's or account's own permissions are the only limit, `caution` when Sinatra only asks for read-only access.
+			Severity ConnectorCatalogEntryAcknowledgementWarningSeverity `json:"severity"`
+			Title    string                                              `json:"title"`
+		} `json:"warning"`
+	} `json:"acknowledgement"`
+
+	// Acknowledgements One acknowledgement per way to connect. Show the one for the method used, and connect only once every confirmation is accepted.
+	Acknowledgements struct {
+		// Oauth What signing in at the provider means. Present when `methods` includes `oauth`.
+		Oauth *struct {
+			// Confirmations Statements the person confirms one by one, each with its own checkbox, before connecting.
+			Confirmations []string `json:"confirmations"`
+			Text          string   `json:"text"`
+
+			// Version Send it as `acknowledgementVersion` to confirm you accepted this text.
+			Version string `json:"version"`
+
+			// Warning Show it before the text. `null` when the provider enforces read-only access.
+			Warning *struct {
+				Body string `json:"body"`
+
+				// Items What an agent could do if the access allows it.
+				Items []string `json:"items"`
+
+				// Severity `danger` when the token's or account's own permissions are the only limit, `caution` when Sinatra only asks for read-only access.
+				Severity ConnectorCatalogEntryAcknowledgementsOauthWarningSeverity `json:"severity"`
+				Title    string                                                    `json:"title"`
+			} `json:"warning"`
+		} `json:"oauth,omitempty"`
+
+		// Token What connecting a pasted token means. Present when `methods` includes `token`.
+		Token *struct {
+			// Confirmations Statements the person confirms one by one, each with its own checkbox, before connecting.
+			Confirmations []string `json:"confirmations"`
+			Text          string   `json:"text"`
+
+			// Version Send it as `acknowledgementVersion` to confirm you accepted this text.
+			Version string `json:"version"`
+
+			// Warning Show it before the text. `null` when the provider enforces read-only access.
+			Warning *struct {
+				Body string `json:"body"`
+
+				// Items What an agent could do if the access allows it.
+				Items []string `json:"items"`
+
+				// Severity `danger` when the token's or account's own permissions are the only limit, `caution` when Sinatra only asks for read-only access.
+				Severity ConnectorCatalogEntryAcknowledgementsTokenWarningSeverity `json:"severity"`
+				Title    string                                                    `json:"title"`
+			} `json:"warning"`
+		} `json:"token,omitempty"`
+	} `json:"acknowledgements"`
+
+	// ConnectUrl The dashboard page that opens this connector's connect dialog. Add `project`, `name` and `method` (`oauth` or `token`) to its query to fill the dialog in; signing in at the provider and accepting the warning happen there, in a workspace owner's or admin's browser.
+	ConnectUrl string `json:"connectUrl"`
+
+	// Id The connector's id, such as `neon` or `supabase`. Pass it as `connector` to connect. New connectors can appear.
+	Id string `json:"id"`
+
+	// LeftAtProvider Only for a connector that can be signed in to and whose provider keeps its MCP server listed as an authorized application after a disconnect: what stays there and where to remove it.
+	LeftAtProvider *string `json:"leftAtProvider,omitempty"`
+
+	// Methods How it can be connected. `token`: paste a provider token. `oauth`: sign in at the provider from the dashboard.
+	Methods []string `json:"methods"`
+	Name    string   `json:"name"`
+
+	// OauthHelp Only for a connector that can be signed in to: what happens at the provider when you sign in.
+	OauthHelp *string `json:"oauthHelp,omitempty"`
+
+	// ProjectRefHelp Deprecated: `reference.help`, or empty when there is none.
+	ProjectRefHelp string `json:"projectRefHelp"`
+
+	// ProjectRefLabel Deprecated: `reference.label`, or empty when there is none.
+	ProjectRefLabel string `json:"projectRefLabel"`
+
+	// ProviderGuidance The provider's own advice on what to connect.
+	ProviderGuidance string `json:"providerGuidance"`
+
+	// Reference The provider reference a connection takes as `projectRef`. `null` when the connector takes none: leave `projectRef` out.
+	Reference *struct {
+		// Help Where to find it at the provider.
+		Help string `json:"help"`
+
+		// Label What the provider calls the reference `projectRef` takes.
+		Label string `json:"label"`
+
+		// Required When `false`, `projectRef` may be left out and the token decides what the connection reaches.
+		Required bool `json:"required"`
+	} `json:"reference"`
+
+	// Summary What the agent can read through this connector.
+	Summary string `json:"summary"`
+
+	// TokenHelp Where to create a token at the provider.
+	TokenHelp string `json:"tokenHelp"`
+
+	// TokenHelpUrl The provider page where a token is created.
+	TokenHelpUrl string `json:"tokenHelpUrl"`
+}
+
+// ConnectorCatalogEntryAcknowledgementWarningSeverity `danger` when the token's or account's own permissions are the only limit, `caution` when Sinatra only asks for read-only access.
+type ConnectorCatalogEntryAcknowledgementWarningSeverity string
+
+// ConnectorCatalogEntryAcknowledgementsOauthWarningSeverity `danger` when the token's or account's own permissions are the only limit, `caution` when Sinatra only asks for read-only access.
+type ConnectorCatalogEntryAcknowledgementsOauthWarningSeverity string
+
+// ConnectorCatalogEntryAcknowledgementsTokenWarningSeverity `danger` when the token's or account's own permissions are the only limit, `caution` when Sinatra only asks for read-only access.
+type ConnectorCatalogEntryAcknowledgementsTokenWarningSeverity string
+
+// ConnectorConnectRequest defines model for ConnectorConnectRequest.
+type ConnectorConnectRequest struct {
+	// AcknowledgementVersion The catalog entry's `acknowledgements.token.version`, confirming you accepted its text.
+	AcknowledgementVersion string `json:"acknowledgementVersion"`
+
+	// Confirmations Required: the catalog entry's `acknowledgements.token.confirmations`, exactly and in order, each accepted by the person connecting.
+	Confirmations *[]string `json:"confirmations,omitempty"`
+
+	// Connector A catalog entry's `id`.
+	Connector string `json:"connector"`
+
+	// Label Your name for the connection, 1 to 64 characters with no line breaks, control or invisible format characters. Defaults to `projectRef`, or to `default` without one. The `serverName` it gives must not already be in use in the workspace.
+	Label *string `json:"label,omitempty"`
+
+	// ProjectRef The provider's project reference, in the provider's format. Required when the catalog entry's `reference.required` is `true`, and refused when its `reference` is `null`.
+	ProjectRef *string `json:"projectRef,omitempty"`
+
+	// TaskId The task an agent's connect link came from. Once connected, an API task in this workspace is continued; anything else is left alone.
+	TaskId interface{} `json:"taskId,omitempty"`
+
+	// Token The provider token, up to 4096 bytes. It is encrypted at rest and never returned.
+	Token string `json:"token"`
+}
+
+// ConnectorConnected The new connection. No token, ciphertext or part of a token is ever returned.
+type ConnectorConnected struct {
+	// ConnectedByName The connecting user's name, or their GitHub login as `@login`, the way the workspace's members list shows them. `null` when they have neither, or are no longer a member.
+	ConnectedByName   *string `json:"connectedByName"`
+	ConnectedByUserId string  `json:"connectedByUserId"`
+
+	// Connector The catalog entry's id.
+	Connector string `json:"connector"`
+
+	// Continued Only when `taskId` was sent: `true` when that task was continued.
+	Continued *bool     `json:"continued,omitempty"`
+	CreatedAt time.Time `json:"createdAt"`
+
+	// GrantLabel How far the read-only promise goes: `not_guaranteed` when Sinatra only asks the provider for read-only access, `enforced` when the provider enforces it, `token_decides` when the token's own permissions are the only limit.
+	GrantLabel string `json:"grantLabel"`
+
+	// Id The connection's id. Use it as `connectionId` to disconnect.
+	Id string `json:"id"`
+
+	// Label The workspace's name for this connection.
+	Label string `json:"label"`
+
+	// Method How it was connected, such as `token`.
+	Method string `json:"method"`
+
+	// Name The connector's display name.
+	Name string `json:"name"`
+
+	// ProjectRef The provider reference the connection is pinned to; empty when it has none.
+	ProjectRef string `json:"projectRef"`
+
+	// ServerName The MCP server name agents see, derived from the connector and label.
+	ServerName string `json:"serverName"`
+
+	// Status `active` once agents can use it. Other statuses can appear.
+	Status string `json:"status"`
+}
+
+// ConnectorConnection A workspace connection. No token, ciphertext or part of a token is ever returned.
+type ConnectorConnection struct {
+	// ConnectedByName The connecting user's name, or their GitHub login as `@login`, the way the workspace's members list shows them. `null` when they have neither, or are no longer a member.
+	ConnectedByName   *string `json:"connectedByName"`
+	ConnectedByUserId string  `json:"connectedByUserId"`
+
+	// Connector The catalog entry's id.
+	Connector string    `json:"connector"`
+	CreatedAt time.Time `json:"createdAt"`
+
+	// GrantLabel How far the read-only promise goes: `not_guaranteed` when Sinatra only asks the provider for read-only access, `enforced` when the provider enforces it, `token_decides` when the token's own permissions are the only limit.
+	GrantLabel string `json:"grantLabel"`
+
+	// Id The connection's id. Use it as `connectionId` to disconnect.
+	Id string `json:"id"`
+
+	// Label The workspace's name for this connection.
+	Label string `json:"label"`
+
+	// Method How it was connected, such as `token`.
+	Method string `json:"method"`
+
+	// Name The connector's display name.
+	Name string `json:"name"`
+
+	// ProjectRef The provider reference the connection is pinned to; empty when it has none.
+	ProjectRef string `json:"projectRef"`
+
+	// ServerName The MCP server name agents see, derived from the connector and label.
+	ServerName string `json:"serverName"`
+
+	// Status `active` once agents can use it. Other statuses can appear.
+	Status string `json:"status"`
+}
+
+// ConnectorDisconnected defines model for ConnectorDisconnected.
+type ConnectorDisconnected struct {
+	// LeftAtProvider Only for a signed-in connection to a provider that keeps its MCP server listed as an authorized application after a disconnect, whether or not `providerRevocation` is `revoked`: what stays there and where to remove it. Never for a pasted token.
+	LeftAtProvider *string                 `json:"leftAtProvider,omitempty"`
+	Ok             ConnectorDisconnectedOk `json:"ok"`
+
+	// ProviderRevocation Only for a signed-in connection that held tokens: `revoked` when Sinatra revoked its access at the provider, `failed` when it could not (remove the access in your account at the provider).
+	ProviderRevocation *ConnectorDisconnectedProviderRevocation `json:"providerRevocation,omitempty"`
+
+	// RevokeAtProvider `true` when the token is still valid at the provider: revoke it there too. Always `true` for a pasted token.
+	RevokeAtProvider bool `json:"revokeAtProvider"`
+}
+
+// ConnectorDisconnectedOk defines model for ConnectorDisconnected.Ok.
+type ConnectorDisconnectedOk bool
+
+// ConnectorDisconnectedProviderRevocation Only for a signed-in connection that held tokens: `revoked` when Sinatra revoked its access at the provider, `failed` when it could not (remove the access in your account at the provider).
+type ConnectorDisconnectedProviderRevocation string
+
+// Connectors defines model for Connectors.
+type Connectors struct {
+	Catalog []ConnectorCatalogEntry `json:"catalog"`
+
+	// Connections The workspace's connections, oldest first. Disconnected ones are left out.
+	Connections []ConnectorConnection `json:"connections"`
+
+	// Enabled Whether connectors are turned on for the workspace. When `false`, `catalog` is empty and nothing new can be connected.
+	Enabled bool `json:"enabled"`
+}
+
 // CreateMessageRequest A message to send on a task.
 type CreateMessageRequest struct {
 	// Text The message, up to 100,000 characters after trimming.
@@ -694,7 +1035,7 @@ type ErrorBody struct {
 	// BillingUrl The settings section that fixes the refusal: your model credentials or billing, on `payment_required`; billing, when starting a task, on `capacity_full`.
 	BillingUrl *string `json:"billingUrl,omitempty"`
 
-	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `workspace_limit`.
+	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `acknowledgement_required`, `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `connection_not_found`, `connector_cap_exceeded`, `connector_label_taken`, `connector_not_found`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_label`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_project_ref`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invalid_token_value`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `method_not_supported`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `workspace_limit`.
 	Error string `json:"error"`
 
 	// MessageId On `unavailable`: the message that was saved but not sent yet. Retry with it as the `Idempotency-Key`.
@@ -1310,6 +1651,11 @@ type WorkspaceModelSelection struct {
 
 // WorkspaceOverview Read-only workspace overview, with the same member-visible data as the dashboard. No credentials or tokens.
 type WorkspaceOverview struct {
+	// Connectors Present only where connectors are turned on for the workspace.
+	Connectors *struct {
+		Available bool `json:"available"`
+	} `json:"connectors,omitempty"`
+
 	// DefaultModel The workspace's saved model default, or null when unset. Personal and repository overrides aren't included.
 	DefaultModel *struct {
 		Effort *string `json:"effort,omitempty"`
@@ -1767,6 +2113,9 @@ type BillingCheckoutJSONRequestBody = BillingCheckoutRequest
 
 // BillingPortalJSONRequestBody defines body for BillingPortal for application/json ContentType.
 type BillingPortalJSONRequestBody = BillingPortalRequest
+
+// ConnectorsConnectJSONRequestBody defines body for ConnectorsConnect for application/json ContentType.
+type ConnectorsConnectJSONRequestBody = ConnectorConnectRequest
 
 // WorkspaceAccessCreateInviteJSONRequestBody defines body for WorkspaceAccessCreateInvite for application/json ContentType.
 type WorkspaceAccessCreateInviteJSONRequestBody = WorkspaceInviteCreateRequest
@@ -2948,6 +3297,128 @@ func newBillingPortalRequestWithBody(server string, workspaceId string, contentT
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newConnectorsListRequest constructs an http.Request for the ConnectorsList method
+func newConnectorsListRequest(server string, workspaceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/connectors", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newConnectorsConnectRequest calls the generic ConnectorsConnect builder with application/json body
+func newConnectorsConnectRequest(server string, workspaceId string, body ConnectorsConnectJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newConnectorsConnectRequestWithBody(server, workspaceId, "application/json", bodyReader)
+}
+
+// newConnectorsConnectRequestWithBody constructs an http.Request for the ConnectorsConnect method, with any body, and a specified content type
+func newConnectorsConnectRequestWithBody(server string, workspaceId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/connectors", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newConnectorsDisconnectRequest constructs an http.Request for the ConnectorsDisconnect method
+func newConnectorsDisconnectRequest(server string, workspaceId string, connectionId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "connectionId", connectionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/connectors/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }

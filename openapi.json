@@ -59,6 +59,10 @@
     {
       "name": "Repositories",
       "description": "Inspect repository configuration and environment status, manage your own overrides and manage secret metadata. Secret values are never returned."
+    },
+    {
+      "name": "Connectors",
+      "description": "Connect services such as Neon and Supabase whose hosted MCP servers the workspace's agents read through, and disconnect them. Connecting is available only in workspaces with connectors enabled; listing and disconnecting keep working for connections that remain. Tokens are never returned."
     }
   ],
   "paths": {
@@ -1874,6 +1878,485 @@
           },
           "404": {
             "description": "Not found. The `error` code says which:\n\n- `capability_request_not_found`: The capability request does not exist in this repository.\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST, PUT, PATCH or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspaceId}/connectors": {
+      "get": {
+        "operationId": "connectors.list",
+        "tags": [
+          "Connectors"
+        ],
+        "summary": "List connectors",
+        "description": "Any current workspace member can read the connector catalog and the workspace's connections. No token or part of a token is returned. With connectors not turned on for this workspace it answers only while connections remain, with `enabled: false` and an empty catalog, so they can still be disconnected; otherwise it returns 404.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The catalog and the workspace's connections.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connectors"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist. Also answered when connectors aren't turned on for the workspace and it has no connections.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST, PUT, PATCH or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "connectors.connect",
+        "tags": [
+          "Connectors"
+        ],
+        "summary": "Connect a service with a token",
+        "description": "Owner or admin only. Stores a pasted provider token, encrypted, and connects it for every task in the workspace. Agents reach the provider's MCP server for `projectRef` and read through it; Sinatra can't guarantee read-only access: the connection's `grantLabel` says what limits it (the catalog entry's acknowledgement explains it). Send the catalog entry's `acknowledgements.token.version` once its text is accepted. The token is never returned. With the `taskId` from an agent's connect link, an API task in the workspace is then sent a message to continue, and `continued` says whether it was; nothing about `taskId` can fail the connect. Returns 404 unless connectors are turned on for this workspace, before write authorization.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectorConnectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The new connection, with no token.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectorConnected"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `acknowledgement_required`: `acknowledgementVersion` isn't the current acknowledgement's version, or `confirmations` isn't exactly the catalog entry's `acknowledgements.token.confirmations` in order. Show its warning, text and confirmations, and send its `version` and every confirmation the person accepted.\n- `bad_request`: The body isn't valid JSON, or is empty.\n- `connector_cap_exceeded`: The workspace has reached its limit of 20 connections. Disconnect one first.\n- `invalid_body`: Send `connector`, `token` and `acknowledgementVersion` as strings and `confirmations` as an array of strings, and optionally `projectRef`, `label` and `taskId`. No other fields are accepted.\n- `invalid_label`: `label`, or `projectRef` when no label is sent, isn't 1 to 64 characters once trimmed, or contains a line break, another control character, or an invisible format character such as a zero-width space or a bidirectional override.\n- `invalid_project_ref`: `projectRef` isn't in the provider's format.\n- `invalid_token_value`: `token` is empty once trimmed, over 4096 bytes, or contains whitespace or a control character.\n- `method_not_supported`: The connector can't be connected this way. Its catalog entry's `methods` lists the ways it can be; one that only signs in at the provider is connected from the dashboard.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only a current workspace owner or admin can connect a service.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `connector_not_found`: No connector in the catalog has that id. `GET /v1/workspaces/{workspaceId}/connectors` lists them.\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist. Also answered when connectors aren't turned on for the workspace.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict. The `error` code says which:\n\n- `connector_label_taken`: Another of the workspace's connections already has the `serverName` this label gives. Choose another label.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST, PUT, PATCH or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Unavailable. The `error` code says which:\n\n- `unavailable`: Token encryption is unavailable. Retry later.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspaceId}/connectors/{connectionId}": {
+      "delete": {
+        "operationId": "connectors.disconnect",
+        "tags": [
+          "Connectors"
+        ],
+        "summary": "Disconnect a service",
+        "description": "Owner or admin only. Deletes the stored token and stops agents using the connection. Works even when connectors aren't turned on for the workspace. A pasted token stays valid at the provider, so `revokeAtProvider` is `true`: revoke it there too. For a signed-in connection Sinatra then revokes its access at the provider, waiting at most five seconds; `providerRevocation` says whether that worked, and `revokeAtProvider` is `true` only when it did not.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "connectionId",
+            "in": "path",
+            "required": true,
+            "description": "The connection's id, from `GET /v1/workspaces/{workspaceId}/connectors`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Disconnected.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectorDisconnected"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only a current workspace owner or admin can disconnect a service.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `connection_not_found`: No connection with that id in this workspace, or it is already disconnected.\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
             "headers": {
               "x-request-id": {
                 "$ref": "#/components/headers/RequestId"
@@ -9447,6 +9930,560 @@
         "type": "object",
         "properties": {}
       },
+      "ConnectorCatalogEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The connector's id, such as `neon` or `supabase`. Pass it as `connector` to connect. New connectors can appear."
+          },
+          "name": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "description": "What the agent can read through this connector."
+          },
+          "methods": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "How it can be connected. `token`: paste a provider token. `oauth`: sign in at the provider from the dashboard."
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "description": "What the provider calls the reference `projectRef` takes."
+                  },
+                  "help": {
+                    "type": "string",
+                    "description": "Where to find it at the provider."
+                  },
+                  "required": {
+                    "type": "boolean",
+                    "description": "When `false`, `projectRef` may be left out and the token decides what the connection reaches."
+                  }
+                },
+                "required": [
+                  "label",
+                  "help",
+                  "required"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The provider reference a connection takes as `projectRef`. `null` when the connector takes none: leave `projectRef` out."
+          },
+          "projectRefLabel": {
+            "type": "string",
+            "description": "Deprecated: `reference.label`, or empty when there is none."
+          },
+          "projectRefHelp": {
+            "type": "string",
+            "description": "Deprecated: `reference.help`, or empty when there is none."
+          },
+          "tokenHelp": {
+            "type": "string",
+            "description": "Where to create a token at the provider."
+          },
+          "tokenHelpUrl": {
+            "type": "string",
+            "description": "The provider page where a token is created."
+          },
+          "providerGuidance": {
+            "type": "string",
+            "description": "The provider's own advice on what to connect."
+          },
+          "oauthHelp": {
+            "description": "Only for a connector that can be signed in to: what happens at the provider when you sign in.",
+            "type": "string"
+          },
+          "leftAtProvider": {
+            "description": "Only for a connector that can be signed in to and whose provider keeps its MCP server listed as an authorized application after a disconnect: what stays there and where to remove it.",
+            "type": "string"
+          },
+          "acknowledgement": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "string",
+                "description": "Send it as `acknowledgementVersion` to confirm you accepted this text."
+              },
+              "text": {
+                "type": "string"
+              },
+              "warning": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "severity": {
+                        "type": "string",
+                        "enum": [
+                          "caution",
+                          "danger"
+                        ],
+                        "description": "`danger` when the token's or account's own permissions are the only limit, `caution` when Sinatra only asks for read-only access."
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "body": {
+                        "type": "string"
+                      },
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "What an agent could do if the access allows it."
+                      }
+                    },
+                    "required": [
+                      "severity",
+                      "title",
+                      "body",
+                      "items"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Show it before the text. `null` when the provider enforces read-only access."
+              },
+              "confirmations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Statements the person confirms one by one, each with its own checkbox, before connecting."
+              }
+            },
+            "required": [
+              "version",
+              "text",
+              "warning",
+              "confirmations"
+            ],
+            "description": "Deprecated: `acknowledgements.token`, or `acknowledgements.oauth` for a connector that has no pasted-token method."
+          },
+          "acknowledgements": {
+            "type": "object",
+            "properties": {
+              "token": {
+                "description": "What connecting a pasted token means. Present when `methods` includes `token`.",
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "description": "Send it as `acknowledgementVersion` to confirm you accepted this text."
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "warning": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "severity": {
+                            "type": "string",
+                            "enum": [
+                              "caution",
+                              "danger"
+                            ],
+                            "description": "`danger` when the token's or account's own permissions are the only limit, `caution` when Sinatra only asks for read-only access."
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "body": {
+                            "type": "string"
+                          },
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "What an agent could do if the access allows it."
+                          }
+                        },
+                        "required": [
+                          "severity",
+                          "title",
+                          "body",
+                          "items"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Show it before the text. `null` when the provider enforces read-only access."
+                  },
+                  "confirmations": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Statements the person confirms one by one, each with its own checkbox, before connecting."
+                  }
+                },
+                "required": [
+                  "version",
+                  "text",
+                  "warning",
+                  "confirmations"
+                ]
+              },
+              "oauth": {
+                "description": "What signing in at the provider means. Present when `methods` includes `oauth`.",
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "description": "Send it as `acknowledgementVersion` to confirm you accepted this text."
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "warning": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "severity": {
+                            "type": "string",
+                            "enum": [
+                              "caution",
+                              "danger"
+                            ],
+                            "description": "`danger` when the token's or account's own permissions are the only limit, `caution` when Sinatra only asks for read-only access."
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "body": {
+                            "type": "string"
+                          },
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "What an agent could do if the access allows it."
+                          }
+                        },
+                        "required": [
+                          "severity",
+                          "title",
+                          "body",
+                          "items"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Show it before the text. `null` when the provider enforces read-only access."
+                  },
+                  "confirmations": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Statements the person confirms one by one, each with its own checkbox, before connecting."
+                  }
+                },
+                "required": [
+                  "version",
+                  "text",
+                  "warning",
+                  "confirmations"
+                ]
+              }
+            },
+            "description": "One acknowledgement per way to connect. Show the one for the method used, and connect only once every confirmation is accepted."
+          },
+          "connectUrl": {
+            "type": "string",
+            "description": "The dashboard page that opens this connector's connect dialog. Add `project`, `name` and `method` (`oauth` or `token`) to its query to fill the dialog in; signing in at the provider and accepting the warning happen there, in a workspace owner's or admin's browser."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "summary",
+          "methods",
+          "reference",
+          "projectRefLabel",
+          "projectRefHelp",
+          "tokenHelp",
+          "tokenHelpUrl",
+          "providerGuidance",
+          "acknowledgement",
+          "acknowledgements",
+          "connectUrl"
+        ],
+        "description": "A service whose hosted MCP server the workspace's agents can read through."
+      },
+      "ConnectorConnectRequest": {
+        "type": "object",
+        "properties": {
+          "connector": {
+            "type": "string",
+            "description": "A catalog entry's `id`."
+          },
+          "projectRef": {
+            "description": "The provider's project reference, in the provider's format. Required when the catalog entry's `reference.required` is `true`, and refused when its `reference` is `null`.",
+            "type": "string"
+          },
+          "label": {
+            "description": "Your name for the connection, 1 to 64 characters with no line breaks, control or invisible format characters. Defaults to `projectRef`, or to `default` without one. The `serverName` it gives must not already be in use in the workspace.",
+            "type": "string"
+          },
+          "token": {
+            "type": "string",
+            "description": "The provider token, up to 4096 bytes. It is encrypted at rest and never returned."
+          },
+          "acknowledgementVersion": {
+            "type": "string",
+            "description": "The catalog entry's `acknowledgements.token.version`, confirming you accepted its text."
+          },
+          "confirmations": {
+            "description": "Required: the catalog entry's `acknowledgements.token.confirmations`, exactly and in order, each accepted by the person connecting.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "taskId": {
+            "description": "The task an agent's connect link came from. Once connected, an API task in this workspace is continued; anything else is left alone."
+          }
+        },
+        "required": [
+          "connector",
+          "token",
+          "acknowledgementVersion"
+        ],
+        "additionalProperties": false
+      },
+      "ConnectorConnected": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The connection's id. Use it as `connectionId` to disconnect."
+          },
+          "connector": {
+            "type": "string",
+            "description": "The catalog entry's id."
+          },
+          "name": {
+            "type": "string",
+            "description": "The connector's display name."
+          },
+          "label": {
+            "type": "string",
+            "description": "The workspace's name for this connection."
+          },
+          "serverName": {
+            "type": "string",
+            "description": "The MCP server name agents see, derived from the connector and label."
+          },
+          "method": {
+            "type": "string",
+            "description": "How it was connected, such as `token`."
+          },
+          "projectRef": {
+            "type": "string",
+            "description": "The provider reference the connection is pinned to; empty when it has none."
+          },
+          "grantLabel": {
+            "type": "string",
+            "description": "How far the read-only promise goes: `not_guaranteed` when Sinatra only asks the provider for read-only access, `enforced` when the provider enforces it, `token_decides` when the token's own permissions are the only limit."
+          },
+          "status": {
+            "type": "string",
+            "description": "`active` once agents can use it. Other statuses can appear."
+          },
+          "connectedByUserId": {
+            "type": "string"
+          },
+          "connectedByName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The connecting user's name, or their GitHub login as `@login`, the way the workspace's members list shows them. `null` when they have neither, or are no longer a member."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "continued": {
+            "description": "Only when `taskId` was sent: `true` when that task was continued.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "connector",
+          "name",
+          "label",
+          "serverName",
+          "method",
+          "projectRef",
+          "grantLabel",
+          "status",
+          "connectedByUserId",
+          "connectedByName",
+          "createdAt"
+        ],
+        "description": "The new connection. No token, ciphertext or part of a token is ever returned."
+      },
+      "ConnectorConnection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The connection's id. Use it as `connectionId` to disconnect."
+          },
+          "connector": {
+            "type": "string",
+            "description": "The catalog entry's id."
+          },
+          "name": {
+            "type": "string",
+            "description": "The connector's display name."
+          },
+          "label": {
+            "type": "string",
+            "description": "The workspace's name for this connection."
+          },
+          "serverName": {
+            "type": "string",
+            "description": "The MCP server name agents see, derived from the connector and label."
+          },
+          "method": {
+            "type": "string",
+            "description": "How it was connected, such as `token`."
+          },
+          "projectRef": {
+            "type": "string",
+            "description": "The provider reference the connection is pinned to; empty when it has none."
+          },
+          "grantLabel": {
+            "type": "string",
+            "description": "How far the read-only promise goes: `not_guaranteed` when Sinatra only asks the provider for read-only access, `enforced` when the provider enforces it, `token_decides` when the token's own permissions are the only limit."
+          },
+          "status": {
+            "type": "string",
+            "description": "`active` once agents can use it. Other statuses can appear."
+          },
+          "connectedByUserId": {
+            "type": "string"
+          },
+          "connectedByName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The connecting user's name, or their GitHub login as `@login`, the way the workspace's members list shows them. `null` when they have neither, or are no longer a member."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "connector",
+          "name",
+          "label",
+          "serverName",
+          "method",
+          "projectRef",
+          "grantLabel",
+          "status",
+          "connectedByUserId",
+          "connectedByName",
+          "createdAt"
+        ],
+        "description": "A workspace connection. No token, ciphertext or part of a token is ever returned."
+      },
+      "ConnectorDisconnected": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "revokeAtProvider": {
+            "type": "boolean",
+            "description": "`true` when the token is still valid at the provider: revoke it there too. Always `true` for a pasted token."
+          },
+          "providerRevocation": {
+            "description": "Only for a signed-in connection that held tokens: `revoked` when Sinatra revoked its access at the provider, `failed` when it could not (remove the access in your account at the provider).",
+            "type": "string",
+            "enum": [
+              "revoked",
+              "failed"
+            ]
+          },
+          "leftAtProvider": {
+            "description": "Only for a signed-in connection to a provider that keeps its MCP server listed as an authorized application after a disconnect, whether or not `providerRevocation` is `revoked`: what stays there and where to remove it. Never for a pasted token.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ok",
+          "revokeAtProvider"
+        ]
+      },
+      "Connectors": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether connectors are turned on for the workspace. When `false`, `catalog` is empty and nothing new can be connected."
+          },
+          "catalog": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConnectorCatalogEntry"
+            }
+          },
+          "connections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConnectorConnection"
+            },
+            "description": "The workspace's connections, oldest first. Disconnected ones are left out."
+          }
+        },
+        "required": [
+          "enabled",
+          "catalog",
+          "connections"
+        ]
+      },
       "CreateMessageRequest": {
         "type": "object",
         "properties": {
@@ -9671,7 +10708,7 @@
         "properties": {
           "error": {
             "type": "string",
-            "description": "A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `workspace_limit`."
+            "description": "A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `acknowledgement_required`, `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `connection_not_found`, `connector_cap_exceeded`, `connector_label_taken`, `connector_not_found`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_label`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_project_ref`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invalid_token_value`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `method_not_supported`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `workspace_limit`."
           },
           "reason": {
             "description": "A sentence saying what went wrong and, where it helps, what to do. Written to show to a person.",
@@ -11863,6 +12900,18 @@
               "available",
               "enabled",
               "connected"
+            ]
+          },
+          "connectors": {
+            "description": "Present only where connectors are turned on for the workspace.",
+            "type": "object",
+            "properties": {
+              "available": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "available"
             ]
           },
           "repos": {
