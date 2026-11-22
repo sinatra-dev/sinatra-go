@@ -170,6 +170,21 @@ func (e DelegateTicketResponseOk) Valid() bool {
 	}
 }
 
+// Defines values for DismissTaskResponseDismissed.
+const (
+	DismissTaskResponseDismissedTrue DismissTaskResponseDismissed = true
+)
+
+// Valid indicates whether the value is a known member of the DismissTaskResponseDismissed enum.
+func (e DismissTaskResponseDismissed) Valid() bool {
+	switch e {
+	case DismissTaskResponseDismissedTrue:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for RepoCapabilityRequestDismissedDismissed.
 const (
 	RepoCapabilityRequestDismissedDismissedTrue RepoCapabilityRequestDismissedDismissed = true
@@ -1021,6 +1036,15 @@ type DelegateTicketResponse struct {
 // DelegateTicketResponseOk Always `true`: the issue was handed to Sinatra.
 type DelegateTicketResponseOk bool
 
+// DismissTaskResponse The task was dismissed from Needs you.
+type DismissTaskResponse struct {
+	// Dismissed Always `true`: the task is now Idle.
+	Dismissed DismissTaskResponseDismissed `json:"dismissed"`
+}
+
+// DismissTaskResponseDismissed Always `true`: the task is now Idle.
+type DismissTaskResponseDismissed bool
+
 // EmailPreferences Your account-wide email preferences, shared with the signed email-preferences page.
 type EmailPreferences struct {
 	// SetupReminders Whether Sinatra may send you setup reminder emails.
@@ -1035,7 +1059,7 @@ type ErrorBody struct {
 	// BillingUrl The settings section that fixes the refusal: your model credentials or billing, on `payment_required`; billing, when starting a task, on `capacity_full`.
 	BillingUrl *string `json:"billingUrl,omitempty"`
 
-	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `acknowledgement_required`, `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `connection_not_found`, `connector_cap_exceeded`, `connector_label_taken`, `connector_not_found`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_label`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_project_ref`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invalid_token_value`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `method_not_supported`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `workspace_limit`.
+	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `acknowledgement_required`, `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `connection_not_found`, `connector_cap_exceeded`, `connector_label_taken`, `connector_not_found`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_label`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_project_ref`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invalid_token_value`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `method_not_supported`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_needs_input`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `workspace_limit`.
 	Error string `json:"error"`
 
 	// MessageId On `unavailable`: the message that was saved but not sent yet. Retry with it as the `Idempotency-Key`.
@@ -5268,6 +5292,47 @@ func newTasksGetRequest(server string, workspaceId string, taskId string) (*http
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newTasksDismissRequest constructs an http.Request for the TasksDismiss method
+func newTasksDismissRequest(server string, workspaceId string, taskId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "taskId", taskId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/tasks/%s/dismiss", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}

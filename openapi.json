@@ -7820,6 +7820,179 @@
         }
       }
     },
+    "/v1/workspaces/{workspaceId}/tasks/{taskId}/dismiss": {
+      "post": {
+        "operationId": "tasks.dismiss",
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Dismiss a task",
+        "description": "Dismisses a task from Needs you and makes it Idle. Any workspace member can dismiss a task, whatever its source.\n\nOnly a task waiting for your input can be dismissed. A running or queued task, or one already Idle, is `409 not_needs_input`. Dismiss does not stop an agent, change the task's status, or close its pull requests. A later message can start the next agent.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "description": "The task's id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The task was dismissed.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DismissTaskResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: No such task in the workspace, or the workspace doesn't exist or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict. The `error` code says which:\n\n- `not_needs_input`: The task isn't waiting for your input, or it has a turn waiting in the queue. Running, queued and idle tasks cannot be dismissed.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST, PUT, PATCH or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/workspaces/{workspaceId}/tasks/{taskId}/messages": {
       "post": {
         "operationId": "messages.create",
@@ -10685,6 +10858,20 @@
         ],
         "description": "The issue was delegated."
       },
+      "DismissTaskResponse": {
+        "type": "object",
+        "properties": {
+          "dismissed": {
+            "type": "boolean",
+            "const": true,
+            "description": "Always `true`: the task is now Idle."
+          }
+        },
+        "required": [
+          "dismissed"
+        ],
+        "description": "The task was dismissed from Needs you."
+      },
       "EmailPreferences": {
         "type": "object",
         "properties": {
@@ -10708,7 +10895,7 @@
         "properties": {
           "error": {
             "type": "string",
-            "description": "A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `acknowledgement_required`, `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `connection_not_found`, `connector_cap_exceeded`, `connector_label_taken`, `connector_not_found`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_label`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_project_ref`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invalid_token_value`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `method_not_supported`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `workspace_limit`."
+            "description": "A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `acknowledgement_required`, `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `connection_not_found`, `connector_cap_exceeded`, `connector_label_taken`, `connector_not_found`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_label`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_project_ref`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invalid_token_value`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `method_not_supported`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_needs_input`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `workspace_limit`."
           },
           "reason": {
             "description": "A sentence saying what went wrong and, where it helps, what to do. Written to show to a person.",
