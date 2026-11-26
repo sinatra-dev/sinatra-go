@@ -959,6 +959,28 @@ type CreateMessageResponse struct {
 	MessageId string `json:"messageId"`
 }
 
+// CreateRecurringTaskRequest A recurring task to create. You own it, and each run starts a task as you.
+type CreateRecurringTaskRequest struct {
+	// Cadence When runs start. `times` holds 1 to 4 different 24-hour `HH:MM` times, local to `timezone`. Send exactly one of `weekdays`, days of the week from 0 (Sunday) to 6 (Saturday), or `dayOfMonth`, a day from 1 to 28. Every weekday at 9:00 is `{ "times": ["09:00"], "weekdays": [1, 2, 3, 4, 5] }`; the first of each month is `{ "times": ["09:00"], "dayOfMonth": 1 }`.
+	Cadence struct {
+		DayOfMonth *int     `json:"dayOfMonth,omitempty"`
+		Times      []string `json:"times"`
+		Weekdays   *[]int   `json:"weekdays,omitempty"`
+	} `json:"cadence"`
+
+	// Name A short name, up to 200 characters. Defaults to the prompt's first line, cut to 200 characters.
+	Name *string `json:"name,omitempty"`
+
+	// NotifyByEmail Whether the owner gets an email when each run's agent finishes or needs a reply. Defaults to `true`.
+	NotifyByEmail *bool `json:"notifyByEmail,omitempty"`
+
+	// Prompt What each run asks, as you'd ask a teammate. Each run starts a task whose first message is this prompt under two lines naming the recurring task and the run's time; that message must fit in 100,000 characters.
+	Prompt string `json:"prompt"`
+
+	// Timezone An IANA time zone, such as `America/Chicago`. The `cadence` times are local to it.
+	Timezone string `json:"timezone"`
+}
+
 // CreateTaskRequest A task to start.
 type CreateTaskRequest struct {
 	// Model A model from Sinatra's catalog, such as `anthropic/claude-opus-5-5` or `openai-codex/gpt-6.1-sol`, that every agent on the task runs on. The model picks its engine. Omit it to use your default or the workspace default.
@@ -1059,7 +1081,7 @@ type ErrorBody struct {
 	// BillingUrl The settings section that fixes the refusal: your model credentials or billing, on `payment_required`; billing, when starting a task, on `capacity_full`.
 	BillingUrl *string `json:"billingUrl,omitempty"`
 
-	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `acknowledgement_required`, `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `connection_not_found`, `connector_cap_exceeded`, `connector_label_taken`, `connector_not_found`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_label`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_project_ref`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invalid_token_value`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `method_not_supported`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_needs_input`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `workspace_limit`.
+	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `acknowledgement_required`, `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `connection_not_found`, `connector_cap_exceeded`, `connector_label_taken`, `connector_not_found`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `feature_off`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_label`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_project_ref`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invalid_token_value`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `method_not_supported`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_needs_input`, `not_running`, `owner_left`, `payment_required`, `plan_required`, `plans_not_configured`, `previous_run_active`, `provider_unreachable`, `recurring_task_limit`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `start_failed`, `state_mismatch`, `task_missing`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `waiting_for_reply`, `workspace_limit`.
 	Error string `json:"error"`
 
 	// MessageId On `unavailable`: the message that was saved but not sent yet. Retry with it as the `Idempotency-Key`.
@@ -1154,6 +1176,279 @@ type PullRequest struct {
 
 	// Url The pull request's address on GitHub.
 	Url string `json:"url"`
+}
+
+// RecurringTask A recurring task: a prompt that starts a task on a schedule, as the member who created it, until someone pauses or deletes it.
+type RecurringTask struct {
+	// Cadence When runs start. `times` holds 1 to 4 different 24-hour `HH:MM` times, local to `timezone`. Send exactly one of `weekdays`, days of the week from 0 (Sunday) to 6 (Saturday), or `dayOfMonth`, a day from 1 to 28. Every weekday at 9:00 is `{ "times": ["09:00"], "weekdays": [1, 2, 3, 4, 5] }`; the first of each month is `{ "times": ["09:00"], "dayOfMonth": 1 }`.
+	Cadence struct {
+		DayOfMonth *int     `json:"dayOfMonth,omitempty"`
+		Times      []string `json:"times"`
+		Weekdays   *[]int   `json:"weekdays,omitempty"`
+	} `json:"cadence"`
+	CreatedAt time.Time `json:"createdAt"`
+
+	// Id The recurring task's id. Use it as `taskId` in the recurring task endpoints.
+	Id string `json:"id"`
+
+	// Name Its name, which each run's task title shows.
+	Name string `json:"name"`
+
+	// NextRunAt When the next scheduled run starts. `null` while paused.
+	NextRunAt *time.Time `json:"nextRunAt"`
+
+	// NotifyByEmail Whether the owner gets an email when each run's agent finishes or needs a reply. Defaults to `true`.
+	NotifyByEmail bool `json:"notifyByEmail"`
+
+	// OwnerUserId The user id of the member who created it. Only they can edit, resume or run it, and every run starts a task as them.
+	OwnerUserId string `json:"ownerUserId"`
+
+	// PausedAt When it was paused. `null` while scheduled runs are on.
+	PausedAt *time.Time `json:"pausedAt"`
+
+	// PausedReason `user` when a person paused it. Otherwise Sinatra paused it because a scheduled run was refused, such as when the owner left the workspace or billing stopped the start, and this says why. `null` while scheduled runs are on.
+	PausedReason *string `json:"pausedReason"`
+
+	// Prompt What each run asks.
+	Prompt string `json:"prompt"`
+
+	// Timezone The IANA time zone the `cadence` times are local to.
+	Timezone  string    `json:"timezone"`
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	// WorkspaceId The workspace's id.
+	WorkspaceId string `json:"workspaceId"`
+}
+
+// RecurringTaskDetail defines model for RecurringTaskDetail.
+type RecurringTaskDetail struct {
+	// Next Pass it as `before` to read older runs. `null` when there are no more.
+	Next *string `json:"next"`
+
+	// Runs Up to 50 runs, newest first.
+	Runs []struct {
+		CreatedAt time.Time `json:"createdAt"`
+
+		// Id The run's id.
+		Id string `json:"id"`
+
+		// Message The prompt when the run was made.
+		Message string `json:"message"`
+
+		// NotifiedAt When the owner was emailed that the run's agent finished or needed a reply. `null` until then, and when email is off.
+		NotifiedAt *time.Time `json:"notifiedAt"`
+
+		// Outcome `started` once its task started. `skipped` or `refused` when it didn't, with `reason` saying why. `pending` while a start is still being tried: a scheduled run that met a full queue or an outage is retried every minute until a minute before the next scheduled time, then `refused`. Other values can appear.
+		Outcome string `json:"outcome"`
+
+		// OwnerUserId The user id of the owner the run's task starts as.
+		OwnerUserId string `json:"ownerUserId"`
+
+		// Reason Why the run didn't start, as a code, such as `previous_run_active` (an earlier run's task is still running or queued), `waiting_for_reply` (an earlier run's task waits for a reply), `paused`, `owner_left`, `capacity_full`, `start_failed`, or a refused start's error code such as `payment_required`. `null` when there's nothing to say. Other codes can appear.
+		Reason *string `json:"reason"`
+
+		// ReasonText A sentence saying why the run didn't start, to show a person. `null` when there's none.
+		ReasonText *string `json:"reasonText"`
+
+		// RecurringTaskId The recurring task's id.
+		RecurringTaskId string `json:"recurringTaskId"`
+
+		// ScheduledFor The scheduled time this run is for. For a run started by hand, when it was asked for.
+		ScheduledFor time.Time `json:"scheduledFor"`
+
+		// StartedAt When the run's task was created. `null` when no task was made.
+		StartedAt *time.Time `json:"startedAt"`
+
+		// TaskName The recurring task's name when the run was made. `null` on some older runs.
+		TaskName *string `json:"taskName"`
+
+		// Trigger `schedule` for a scheduled run, `manual` for one started by hand. Other values can appear.
+		Trigger string `json:"trigger"`
+
+		// WorkspaceId The workspace's id.
+		WorkspaceId string `json:"workspaceId"`
+
+		// WorkstreamId The task the run made. Use it as `taskId` in the task endpoints. `null` when no task was made.
+		WorkstreamId *string `json:"workstreamId"`
+	} `json:"runs"`
+
+	// Task A recurring task: a prompt that starts a task on a schedule, as the member who created it, until someone pauses or deletes it.
+	Task RecurringTask `json:"task"`
+}
+
+// RecurringTaskList defines model for RecurringTaskList.
+type RecurringTaskList struct {
+	// Tasks The workspace's recurring tasks, newest first.
+	Tasks []struct {
+		// Cadence When runs start. `times` holds 1 to 4 different 24-hour `HH:MM` times, local to `timezone`. Send exactly one of `weekdays`, days of the week from 0 (Sunday) to 6 (Saturday), or `dayOfMonth`, a day from 1 to 28. Every weekday at 9:00 is `{ "times": ["09:00"], "weekdays": [1, 2, 3, 4, 5] }`; the first of each month is `{ "times": ["09:00"], "dayOfMonth": 1 }`.
+		Cadence struct {
+			DayOfMonth *int     `json:"dayOfMonth,omitempty"`
+			Times      []string `json:"times"`
+			Weekdays   *[]int   `json:"weekdays,omitempty"`
+		} `json:"cadence"`
+		CreatedAt time.Time `json:"createdAt"`
+
+		// Id The recurring task's id. Use it as `taskId` in the recurring task endpoints.
+		Id string `json:"id"`
+
+		// LastRun The most recent run. `null` before the first.
+		LastRun *RecurringTaskRun `json:"lastRun"`
+
+		// Name Its name, which each run's task title shows.
+		Name string `json:"name"`
+
+		// NextRunAt When the next scheduled run starts. `null` while paused.
+		NextRunAt *time.Time `json:"nextRunAt"`
+
+		// NotifyByEmail Whether the owner gets an email when each run's agent finishes or needs a reply. Defaults to `true`.
+		NotifyByEmail bool `json:"notifyByEmail"`
+
+		// Owner The owner's user id, name and GitHub login. `null` when they are no longer a member.
+		Owner *struct {
+			GithubLogin *string `json:"githubLogin"`
+			Id          string  `json:"id"`
+			Name        *string `json:"name"`
+		} `json:"owner"`
+
+		// OwnerUserId The user id of the member who created it. Only they can edit, resume or run it, and every run starts a task as them.
+		OwnerUserId string `json:"ownerUserId"`
+
+		// PausedAt When it was paused. `null` while scheduled runs are on.
+		PausedAt *time.Time `json:"pausedAt"`
+
+		// PausedReason `user` when a person paused it. Otherwise Sinatra paused it because a scheduled run was refused, such as when the owner left the workspace or billing stopped the start, and this says why. `null` while scheduled runs are on.
+		PausedReason *string `json:"pausedReason"`
+
+		// Prompt What each run asks.
+		Prompt string `json:"prompt"`
+
+		// Timezone The IANA time zone the `cadence` times are local to.
+		Timezone  string    `json:"timezone"`
+		UpdatedAt time.Time `json:"updatedAt"`
+
+		// WorkspaceId The workspace's id.
+		WorkspaceId string `json:"workspaceId"`
+	} `json:"tasks"`
+}
+
+// RecurringTaskRequest Changes to a recurring task. Fields you leave out stay as they are.
+type RecurringTaskRequest struct {
+	// Cadence When runs start. `times` holds 1 to 4 different 24-hour `HH:MM` times, local to `timezone`. Send exactly one of `weekdays`, days of the week from 0 (Sunday) to 6 (Saturday), or `dayOfMonth`, a day from 1 to 28. Every weekday at 9:00 is `{ "times": ["09:00"], "weekdays": [1, 2, 3, 4, 5] }`; the first of each month is `{ "times": ["09:00"], "dayOfMonth": 1 }`.
+	Cadence *struct {
+		DayOfMonth *int     `json:"dayOfMonth,omitempty"`
+		Times      []string `json:"times"`
+		Weekdays   *[]int   `json:"weekdays,omitempty"`
+	} `json:"cadence,omitempty"`
+
+	// Name A short name, up to 200 characters. Defaults to the prompt's first line, cut to 200 characters.
+	Name *string `json:"name,omitempty"`
+
+	// NotifyByEmail Whether the owner gets an email when each run's agent finishes or needs a reply. Defaults to `true`.
+	NotifyByEmail *bool `json:"notifyByEmail,omitempty"`
+
+	// Prompt What each run asks, as you'd ask a teammate. Each run starts a task whose first message is this prompt under two lines naming the recurring task and the run's time; that message must fit in 100,000 characters.
+	Prompt *string `json:"prompt,omitempty"`
+
+	// Timezone An IANA time zone, such as `America/Chicago`. The `cadence` times are local to it.
+	Timezone *string `json:"timezone,omitempty"`
+}
+
+// RecurringTaskResponse defines model for RecurringTaskResponse.
+type RecurringTaskResponse struct {
+	// Task A recurring task: a prompt that starts a task on a schedule, as the member who created it, until someone pauses or deletes it.
+	Task RecurringTask `json:"task"`
+}
+
+// RecurringTaskRun One run of a recurring task: a scheduled time, or a start by hand, and what came of it.
+type RecurringTaskRun struct {
+	CreatedAt time.Time `json:"createdAt"`
+
+	// Id The run's id.
+	Id string `json:"id"`
+
+	// Message The prompt when the run was made.
+	Message string `json:"message"`
+
+	// NotifiedAt When the owner was emailed that the run's agent finished or needed a reply. `null` until then, and when email is off.
+	NotifiedAt *time.Time `json:"notifiedAt"`
+
+	// Outcome `started` once its task started. `skipped` or `refused` when it didn't, with `reason` saying why. `pending` while a start is still being tried: a scheduled run that met a full queue or an outage is retried every minute until a minute before the next scheduled time, then `refused`. Other values can appear.
+	Outcome string `json:"outcome"`
+
+	// OwnerUserId The user id of the owner the run's task starts as.
+	OwnerUserId string `json:"ownerUserId"`
+
+	// Reason Why the run didn't start, as a code, such as `previous_run_active` (an earlier run's task is still running or queued), `waiting_for_reply` (an earlier run's task waits for a reply), `paused`, `owner_left`, `capacity_full`, `start_failed`, or a refused start's error code such as `payment_required`. `null` when there's nothing to say. Other codes can appear.
+	Reason *string `json:"reason"`
+
+	// ReasonText A sentence saying why the run didn't start, to show a person. `null` when there's none.
+	ReasonText *string `json:"reasonText"`
+
+	// RecurringTaskId The recurring task's id.
+	RecurringTaskId string `json:"recurringTaskId"`
+
+	// ScheduledFor The scheduled time this run is for. For a run started by hand, when it was asked for.
+	ScheduledFor time.Time `json:"scheduledFor"`
+
+	// TaskName The recurring task's name when the run was made. `null` on some older runs.
+	TaskName *string `json:"taskName"`
+
+	// Trigger `schedule` for a scheduled run, `manual` for one started by hand. Other values can appear.
+	Trigger string `json:"trigger"`
+
+	// WorkspaceId The workspace's id.
+	WorkspaceId string `json:"workspaceId"`
+
+	// WorkstreamId The task the run made. Use it as `taskId` in the task endpoints. `null` when no task was made.
+	WorkstreamId *string `json:"workstreamId"`
+}
+
+// RecurringTaskRunError An error from running a recurring task now.
+type RecurringTaskRunError struct {
+	// BillingUrl The settings section that fixes the refusal: your model credentials or billing, on `payment_required`; billing, when starting a task, on `capacity_full`.
+	BillingUrl *string `json:"billingUrl,omitempty"`
+
+	// Error A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear.
+	Error string `json:"error"`
+
+	// MessageId On `unavailable`: the message that was saved but not sent yet. Retry with it as the `Idempotency-Key`.
+	MessageId *string `json:"messageId,omitempty"`
+
+	// Plan The workspace's plan, on `capacity_full` when starting a task.
+	Plan *string `json:"plan,omitempty"`
+
+	// Queued How many agents the plan lets wait, on `capacity_full` when starting a task.
+	Queued *int `json:"queued,omitempty"`
+
+	// Reason A sentence saying what went wrong and, where it helps, what to do. Written to show to a person.
+	Reason *string `json:"reason,omitempty"`
+
+	// Refusal Why a start was refused, on `payment_required` and `github_not_connected`. For `payment_required`: `own_credentials_required` or `subscription_inactive`. For `github_not_connected`: `missing` or `suspended`.
+	Refusal *string `json:"refusal,omitempty"`
+
+	// RequestId The request's id. Present on some errors, not all; the `x-request-id` response header always carries it. Share it with support.
+	RequestId *string `json:"requestId,omitempty"`
+
+	// Run The run as recorded, with its `outcome` and `reason`, when one was made.
+	Run *RecurringTaskRun `json:"run,omitempty"`
+
+	// Running How many agents the plan runs at a time, on `capacity_full` when starting a task.
+	Running *int `json:"running,omitempty"`
+
+	// SettingsUrl The settings page that fixes the refusal, on `github_not_connected`.
+	SettingsUrl *string `json:"settingsUrl,omitempty"`
+
+	// TaskId On `unavailable` after a start: the task that was made. Retry with the same key, or send a message on it.
+	TaskId *string `json:"taskId,omitempty"`
+}
+
+// RecurringTaskStarted The run that started, and its task.
+type RecurringTaskStarted struct {
+	// Run The run, with `outcome` `started`.
+	Run *RecurringTaskRun `json:"run"`
+
+	// TaskId The task the run started. Use it as `taskId` in the task endpoints.
+	TaskId string `json:"taskId"`
 }
 
 // RepoCapabilityRequestDismissed defines model for RepoCapabilityRequestDismissed.
@@ -2075,6 +2370,12 @@ type IntegrationsConnectParamsIntegration string
 // WorkspaceModelsRemoveKeyParamsProvider defines parameters for WorkspaceModelsRemoveKey.
 type WorkspaceModelsRemoveKeyParamsProvider string
 
+// RecurringTasksGetParams defines parameters for RecurringTasksGet.
+type RecurringTasksGetParams struct {
+	// Before The `next` value from the previous page, to read older runs.
+	Before *string `form:"before,omitempty" json:"before,omitempty"`
+}
+
 // SubscriptionsPollParamsProvider defines parameters for SubscriptionsPoll.
 type SubscriptionsPollParamsProvider string
 
@@ -2152,6 +2453,12 @@ type WorkspaceModelsAddKeyJSONRequestBody = WorkspaceModelKeyRequest
 
 // WorkspaceModelsSetDefaultJSONRequestBody defines body for WorkspaceModelsSetDefault for application/json ContentType.
 type WorkspaceModelsSetDefaultJSONRequestBody = WorkspaceModelSelection
+
+// RecurringTasksCreateJSONRequestBody defines body for RecurringTasksCreate for application/json ContentType.
+type RecurringTasksCreateJSONRequestBody = CreateRecurringTaskRequest
+
+// RecurringTasksUpdateJSONRequestBody defines body for RecurringTasksUpdate for application/json ContentType.
+type RecurringTasksUpdateJSONRequestBody = RecurringTaskRequest
 
 // ReposPreflightJSONRequestBody defines body for ReposPreflight for application/json ContentType.
 type ReposPreflightJSONRequestBody = RepoOverrideRequest
@@ -4051,6 +4358,373 @@ func newBillingStatusRequest(server string, workspaceId string) (*http.Request, 
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newRecurringTasksListRequest constructs an http.Request for the RecurringTasksList method
+func newRecurringTasksListRequest(server string, workspaceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/recurring-tasks", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newRecurringTasksCreateRequest calls the generic RecurringTasksCreate builder with application/json body
+func newRecurringTasksCreateRequest(server string, workspaceId string, body RecurringTasksCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newRecurringTasksCreateRequestWithBody(server, workspaceId, "application/json", bodyReader)
+}
+
+// newRecurringTasksCreateRequestWithBody constructs an http.Request for the RecurringTasksCreate method, with any body, and a specified content type
+func newRecurringTasksCreateRequestWithBody(server string, workspaceId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/recurring-tasks", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newRecurringTasksDeleteRequest constructs an http.Request for the RecurringTasksDelete method
+func newRecurringTasksDeleteRequest(server string, workspaceId string, taskId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "taskId", taskId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/recurring-tasks/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newRecurringTasksGetRequest constructs an http.Request for the RecurringTasksGet method
+func newRecurringTasksGetRequest(server string, workspaceId string, taskId string, params *RecurringTasksGetParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "taskId", taskId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/recurring-tasks/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Before != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "before", *params.Before, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newRecurringTasksUpdateRequest calls the generic RecurringTasksUpdate builder with application/json body
+func newRecurringTasksUpdateRequest(server string, workspaceId string, taskId string, body RecurringTasksUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return newRecurringTasksUpdateRequestWithBody(server, workspaceId, taskId, "application/json", bodyReader)
+}
+
+// newRecurringTasksUpdateRequestWithBody constructs an http.Request for the RecurringTasksUpdate method, with any body, and a specified content type
+func newRecurringTasksUpdateRequestWithBody(server string, workspaceId string, taskId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "taskId", taskId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/recurring-tasks/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// newRecurringTasksPauseRequest constructs an http.Request for the RecurringTasksPause method
+func newRecurringTasksPauseRequest(server string, workspaceId string, taskId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "taskId", taskId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/recurring-tasks/%s/pause", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newRecurringTasksResumeRequest constructs an http.Request for the RecurringTasksResume method
+func newRecurringTasksResumeRequest(server string, workspaceId string, taskId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "taskId", taskId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/recurring-tasks/%s/resume", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// newRecurringTasksRunRequest constructs an http.Request for the RecurringTasksRun method
+func newRecurringTasksRunRequest(server string, workspaceId string, taskId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "taskId", taskId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/recurring-tasks/%s/run", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}

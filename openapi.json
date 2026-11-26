@@ -33,6 +33,10 @@
       "description": "A task's conversation."
     },
     {
+      "name": "Recurring tasks",
+      "description": "Schedule a prompt to start a task on set days and times, as the member who created it, and pause, resume, run, edit or delete it. Available in workspaces where recurring tasks are turned on."
+    },
+    {
       "name": "Tickets",
       "description": "Find and delegate Linear and GitHub issues."
     },
@@ -9741,6 +9745,1411 @@
           }
         }
       }
+    },
+    "/v1/workspaces/{workspaceId}/recurring-tasks": {
+      "get": {
+        "operationId": "recurringTasks.list",
+        "tags": [
+          "Recurring tasks"
+        ],
+        "summary": "List recurring tasks",
+        "description": "Lists the workspace's recurring tasks, newest first, each with its owner, its most recent run and when it next runs. Any workspace member can list them. A recurring task starts a task on its schedule, as the member who created it, until someone pauses or deletes it.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workspace's recurring tasks.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist. Also answered when recurring tasks aren't turned on for the workspace.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST, PUT, PATCH or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "recurringTasks.create",
+        "tags": [
+          "Recurring tasks"
+        ],
+        "summary": "Create a recurring task",
+        "description": "Creates a prompt that starts a task on a schedule. Any workspace member can create one, and owns what they create: every run starts a task as them, the way a start from this API does, with no repository named. A member can have up to 10 recurring tasks that aren't paused in a workspace. `name` defaults to the prompt's first line and `notifyByEmail` to `true`. Billing and the GitHub connection are checked now and again at every run; a full queue doesn't stop a create.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRecurringTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The new recurring task, with its next run time.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.\n- `invalid_body`: The body has a field that isn't documented or has the wrong type, `cadence` or `timezone` is invalid, or `cadence` or `timezone` is missing.\n- `invalid_prompt`: `prompt` is empty after trimming, or the first message a run sends, the prompt under two lines naming the recurring task and the run's time, is over 100,000 characters. Also answered when `prompt` is missing.\n- `invalid_title`: `name` is `null`, not a string, empty, or over 200 characters after trimming.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: The workspace doesn't exist, or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist. Also answered when recurring tasks aren't turned on for the workspace.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict. The `error` code says which:\n\n- `github_not_connected`: The workspace's GitHub App installation is suspended (`refusal` is `suspended`). `reason` says what to do and ends with `settingsUrl`, the installation's page on GitHub. A workspace not connected to GitHub at all isn't refused: runs name no repository.\n- `payment_required`: Billing would stop the task: you have no model access in this workspace (`refusal` is `own_credentials_required`), or its subscription is past due (`refusal` is `subscription_inactive`). `reason` says what to do and ends with `billingUrl`, the settings section that fixes it: your model credentials for `own_credentials_required`, billing for `subscription_inactive`.\n- `recurring_task_limit`: The owner already has 10 recurring tasks in this workspace that aren't paused. Pause or delete one first.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST, PUT, PATCH or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Unavailable. The `error` code says which:\n\n- `unavailable`: Sinatra couldn't schedule the recurring task, so it wasn't created. Retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspaceId}/recurring-tasks/{taskId}": {
+      "get": {
+        "operationId": "recurringTasks.get",
+        "tags": [
+          "Recurring tasks"
+        ],
+        "summary": "Get a recurring task",
+        "description": "Returns a recurring task and its runs, newest first, 50 at a time. Any workspace member can read it. Pass `next` as `before` to read older runs.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "description": "The recurring task's id, from `GET /v1/workspaces/{workspaceId}/recurring-tasks`. Not the id of a task a run started.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "description": "The `next` value from the previous page, to read older runs.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The recurring task and a page of its runs.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `invalid_cursor`: `before` isn't one of this recurring task's runs. Pass `next` from the previous page.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: No recurring task with that id in the workspace, recurring tasks aren't turned on for the workspace, or the workspace doesn't exist or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST, PUT, PATCH or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "recurringTasks.update",
+        "tags": [
+          "Recurring tasks"
+        ],
+        "summary": "Edit a recurring task",
+        "description": "Changes a recurring task's name, prompt, schedule, time zone or email setting. Only the owner can edit it. Fields you leave out stay as they are, and a paused recurring task stays paused. Billing and the GitHub connection are checked again, as for a create. Runs already made keep the prompt and name they had.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "description": "The recurring task's id, from `GET /v1/workspaces/{workspaceId}/recurring-tasks`. Not the id of a task a run started.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecurringTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The edited recurring task.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.\n- `invalid_body`: The body has a field that isn't documented or has the wrong type, or `cadence` or `timezone` is invalid.\n- `invalid_prompt`: `prompt` is empty after trimming, or the first message a run sends, the prompt under two lines naming the recurring task and the run's time, is over 100,000 characters.\n- `invalid_title`: `name` is `null`, not a string, empty, or over 200 characters after trimming.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only the recurring task's owner can edit it.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: No recurring task with that id in the workspace, recurring tasks aren't turned on for the workspace, or the workspace doesn't exist or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict. The `error` code says which:\n\n- `github_not_connected`: The workspace's GitHub App installation is suspended (`refusal` is `suspended`). `reason` says what to do and ends with `settingsUrl`, the installation's page on GitHub. A workspace not connected to GitHub at all isn't refused: runs name no repository.\n- `payment_required`: Billing would stop the task: you have no model access in this workspace (`refusal` is `own_credentials_required`), or its subscription is past due (`refusal` is `subscription_inactive`). `reason` says what to do and ends with `billingUrl`, the settings section that fixes it: your model credentials for `own_credentials_required`, billing for `subscription_inactive`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST, PUT, PATCH or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Unavailable. The `error` code says which:\n\n- `unavailable`: Sinatra couldn't update the recurring task's schedule. The change may already be saved; retry it.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "recurringTasks.delete",
+        "tags": [
+          "Recurring tasks"
+        ],
+        "summary": "Delete a recurring task",
+        "description": "Deletes a recurring task so no more runs start. The owner, or a workspace owner or admin, can delete it. Its run history goes with it; tasks its runs started keep going.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "description": "The recurring task's id, from `GET /v1/workspaces/{workspaceId}/recurring-tasks`. Not the id of a task a run started.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted. There is no response body.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only the recurring task's owner or a workspace owner or admin can delete it.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: No recurring task with that id in the workspace, recurring tasks aren't turned on for the workspace, or the workspace doesn't exist or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST, PUT, PATCH or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Unavailable. The `error` code says which:\n\n- `unavailable`: The recurring task was deleted, and no run of it will start, but Sinatra couldn't remove its schedule right away. There's nothing to retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspaceId}/recurring-tasks/{taskId}/pause": {
+      "post": {
+        "operationId": "recurringTasks.pause",
+        "tags": [
+          "Recurring tasks"
+        ],
+        "summary": "Pause a recurring task",
+        "description": "Stops a recurring task's scheduled runs until the owner resumes it. The owner, or a workspace owner or admin, can pause it. The owner can still run it now.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "description": "The recurring task's id, from `GET /v1/workspaces/{workspaceId}/recurring-tasks`. Not the id of a task a run started.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Paused. There is no response body.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only the recurring task's owner or a workspace owner or admin can pause it.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: No recurring task with that id in the workspace, recurring tasks aren't turned on for the workspace, or the workspace doesn't exist or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST, PUT, PATCH or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Unavailable. The `error` code says which:\n\n- `unavailable`: The recurring task was paused, and no scheduled run starts while it is, but Sinatra couldn't update its schedule. Retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspaceId}/recurring-tasks/{taskId}/resume": {
+      "post": {
+        "operationId": "recurringTasks.resume",
+        "tags": [
+          "Recurring tasks"
+        ],
+        "summary": "Resume a recurring task",
+        "description": "Turns a paused recurring task's scheduled runs back on, from the next scheduled time. Only the owner can resume it. A resumed recurring task counts toward the owner's 10 that aren't paused.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "description": "The recurring task's id, from `GET /v1/workspaces/{workspaceId}/recurring-tasks`. Not the id of a task a run started.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The resumed recurring task, with its next run time.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only the recurring task's owner can resume it.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: No recurring task with that id in the workspace, recurring tasks aren't turned on for the workspace, or the workspace doesn't exist or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict. The `error` code says which:\n\n- `recurring_task_limit`: The owner already has 10 recurring tasks in this workspace that aren't paused. Pause or delete one first.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST, PUT, PATCH or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Unavailable. The `error` code says which:\n\n- `unavailable`: The recurring task was resumed, but Sinatra couldn't update its schedule. Retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspaceId}/recurring-tasks/{taskId}/run": {
+      "post": {
+        "operationId": "recurringTasks.run",
+        "tags": [
+          "Recurring tasks"
+        ],
+        "summary": "Run a recurring task now",
+        "description": "Starts one run of a recurring task now, without changing its schedule. Only the owner can run it, and the run's task is theirs. It works while the recurring task is paused, and doesn't resume it. A run doesn't start while an earlier run's task is still running, queued or waiting for a reply, and starting it goes through the same billing, GitHub and queue checks as a start from this API. When the run doesn't start, the error body's `run` is the run as recorded, with its `outcome` and `reason`.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace's id, from `GET /v1/me`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "description": "The recurring task's id, from `GET /v1/workspaces/{workspaceId}/recurring-tasks`. Not the id of a task a run started.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The run and the task it started.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskStarted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `error` code says which:\n\n- `bad_request`: The body isn't valid JSON, or is empty.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskRunError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `error` code says which:\n\n- `invalid_token`: The token is missing, malformed, expired or revoked, or it's an OAuth access token issued for Sinatra's MCP server rather than this API.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWWAuthenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskRunError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `error` code says which:\n\n- `actor_not_authorized`: Only the recurring task's owner can run it.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskRunError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The `error` code says which:\n\n- `not_found`: No recurring task with that id in the workspace, recurring tasks aren't turned on for the workspace, or the workspace doesn't exist or you aren't a member of it. The API answers 404 and never 403, so it doesn't reveal which workspaces exist.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskRunError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict. The `error` code says which:\n\n- `capacity_full`: The workspace's queue is full, so the run didn't start. `reason` is the message to show, the same one the dashboard shows.\n- `feature_off`: Recurring tasks were turned off for the workspace while the run was starting.\n- `github_not_connected`: The workspace's GitHub App installation is suspended (`refusal` is `suspended`). `reason` says what to do and ends with `settingsUrl`, the installation's page on GitHub. A workspace not connected to GitHub at all isn't refused: runs name no repository.\n- `owner_left`: The owner is no longer a member of the workspace.\n- `payment_required`: Billing would stop the task: you have no model access in this workspace (`refusal` is `own_credentials_required`), or its subscription is past due (`refusal` is `subscription_inactive`). `reason` says what to do and ends with `billingUrl`, the settings section that fixes it: your model credentials for `own_credentials_required`, billing for `subscription_inactive`.\n- `previous_run_active`: An earlier run's task is still running or queued, or another run is still starting. Try again once it finishes.\n- `start_failed`: The run couldn't start before the recurring task's next scheduled time.\n- `task_missing`: The recurring task was deleted while the run was starting.\n- `waiting_for_reply`: An earlier run's task is waiting for a reply. Answer it or dismiss it, then try again.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskRunError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large. The `error` code says which:\n\n- `bad_request`: The body is too large.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskRunError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported media type. The `error` code says which:\n\n- `bad_request`: The body's `Content-Type` isn't one the API reads. Send JSON with `Content-Type: application/json`.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskRunError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. The `error` code says which:\n\n- `bad_request`: You're over the request rate limit: 600 GET requests a minute, or 120 POST, PUT, PATCH or DELETE requests a minute, per token and per endpoint. Wait the seconds in the `Retry-After` header, then retry.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskRunError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The `error` code says which:\n\n- `internal_error`: Something went wrong on Sinatra's side. Retry; if it keeps happening, share the `x-request-id` header with support.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskRunError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Unavailable. The `error` code says which:\n\n- `unavailable`: Sinatra couldn't start the run's task. `taskId` is the task that was made, if one was. Retry later.",
+            "headers": {
+              "x-request-id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTaskRunError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -10685,6 +12094,67 @@
         ],
         "description": "The message that was sent."
       },
+      "CreateRecurringTaskRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "A short name, up to 200 characters. Defaults to the prompt's first line, cut to 200 characters."
+          },
+          "prompt": {
+            "type": "string",
+            "description": "What each run asks, as you'd ask a teammate. Each run starts a task whose first message is this prompt under two lines naming the recurring task and the run's time; that message must fit in 100,000 characters."
+          },
+          "cadence": {
+            "type": "object",
+            "properties": {
+              "times": {
+                "minItems": 1,
+                "maxItems": 4,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                }
+              },
+              "weekdays": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6
+                }
+              },
+              "dayOfMonth": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 28
+              }
+            },
+            "required": [
+              "times"
+            ],
+            "additionalProperties": false,
+            "description": "When runs start. `times` holds 1 to 4 different 24-hour `HH:MM` times, local to `timezone`. Send exactly one of `weekdays`, days of the week from 0 (Sunday) to 6 (Saturday), or `dayOfMonth`, a day from 1 to 28. Every weekday at 9:00 is `{ \"times\": [\"09:00\"], \"weekdays\": [1, 2, 3, 4, 5] }`; the first of each month is `{ \"times\": [\"09:00\"], \"dayOfMonth\": 1 }`."
+          },
+          "timezone": {
+            "type": "string",
+            "description": "An IANA time zone, such as `America/Chicago`. The `cadence` times are local to it."
+          },
+          "notifyByEmail": {
+            "type": "boolean",
+            "description": "Whether the owner gets an email when each run's agent finishes or needs a reply. Defaults to `true`."
+          }
+        },
+        "required": [
+          "prompt",
+          "cadence",
+          "timezone"
+        ],
+        "additionalProperties": false,
+        "description": "A recurring task to create. You own it, and each run starts a task as you."
+      },
       "CreateTaskRequest": {
         "type": "object",
         "properties": {
@@ -10895,7 +12365,7 @@
         "properties": {
           "error": {
             "type": "string",
-            "description": "A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `acknowledgement_required`, `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `connection_not_found`, `connector_cap_exceeded`, `connector_label_taken`, `connector_not_found`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_label`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_project_ref`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invalid_token_value`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `method_not_supported`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_needs_input`, `not_running`, `payment_required`, `plan_required`, `plans_not_configured`, `provider_unreachable`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `state_mismatch`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `workspace_limit`."
+            "description": "A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear. Known codes: `acknowledgement_required`, `actor_not_authorized`, `already_member`, `already_subscribed`, `assigned_to_other`, `bad_request`, `billing_disabled`, `capability_request_not_found`, `capability_target_not_authorized`, `capacity_full`, `code_exchange_failed`, `connection_not_found`, `connector_cap_exceeded`, `connector_label_taken`, `connector_not_found`, `consumed`, `customer_missing`, `declined`, `device_auth_not_enabled`, `expired`, `feature_off`, `forbidden`, `github_identity_required`, `github_not_connected`, `github_rate_limited`, `idempotency_conflict`, `illegal_role`, `internal_error`, `invalid_body`, `invalid_code`, `invalid_cursor`, `invalid_idempotency_key`, `invalid_label`, `invalid_limit`, `invalid_model`, `invalid_model_selection`, `invalid_name`, `invalid_override_fragment`, `invalid_pending_connect`, `invalid_project_ref`, `invalid_prompt`, `invalid_repo`, `invalid_secret_header`, `invalid_secret_hosts`, `invalid_secret_name`, `invalid_secret_prefix`, `invalid_secret_value`, `invalid_status`, `invalid_title`, `invalid_token`, `invalid_token_value`, `invite_delivery_failed`, `invite_limit`, `invite_not_found`, `invite_revoked`, `issue_closed`, `issue_not_found`, `key_validation_failed`, `linear_app_user_missing`, `linear_identity_conflict`, `linear_identity_unlinked`, `linear_not_connected`, `linear_reconnect_required`, `membership_not_found`, `method_not_supported`, `model_key_not_found`, `no_checkout_url`, `no_customer`, `no_portal_url`, `not_an_api_task`, `not_an_issue`, `not_connected`, `not_found`, `not_needs_input`, `not_running`, `owner_left`, `payment_required`, `plan_required`, `plans_not_configured`, `previous_run_active`, `provider_unreachable`, `recurring_task_limit`, `repo_disabled`, `repo_environments_not_enabled`, `repo_not_found`, `request_not_found`, `request_not_pending`, `revoked`, `secret_cap_exceeded`, `slack_disabled`, `start_failed`, `state_mismatch`, `task_missing`, `telegram_unavailable`, `unavailable`, `unsupported_integration`, `unsupported_provider`, `usage_unavailable`, `waiting_for_reply`, `workspace_limit`."
           },
           "reason": {
             "description": "A sentence saying what went wrong and, where it helps, what to do. Written to show to a person.",
@@ -11105,6 +12575,745 @@
           "merged"
         ],
         "description": "The pull request a task opened."
+      },
+      "RecurringTask": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The recurring task's id. Use it as `taskId` in the recurring task endpoints."
+          },
+          "workspaceId": {
+            "type": "string",
+            "description": "The workspace's id."
+          },
+          "ownerUserId": {
+            "type": "string",
+            "description": "The user id of the member who created it. Only they can edit, resume or run it, and every run starts a task as them."
+          },
+          "name": {
+            "type": "string",
+            "description": "Its name, which each run's task title shows."
+          },
+          "prompt": {
+            "type": "string",
+            "description": "What each run asks."
+          },
+          "cadence": {
+            "type": "object",
+            "properties": {
+              "times": {
+                "minItems": 1,
+                "maxItems": 4,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                }
+              },
+              "weekdays": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6
+                }
+              },
+              "dayOfMonth": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 28
+              }
+            },
+            "required": [
+              "times"
+            ],
+            "description": "When runs start. `times` holds 1 to 4 different 24-hour `HH:MM` times, local to `timezone`. Send exactly one of `weekdays`, days of the week from 0 (Sunday) to 6 (Saturday), or `dayOfMonth`, a day from 1 to 28. Every weekday at 9:00 is `{ \"times\": [\"09:00\"], \"weekdays\": [1, 2, 3, 4, 5] }`; the first of each month is `{ \"times\": [\"09:00\"], \"dayOfMonth\": 1 }`."
+          },
+          "timezone": {
+            "type": "string",
+            "description": "The IANA time zone the `cadence` times are local to."
+          },
+          "notifyByEmail": {
+            "type": "boolean",
+            "description": "Whether the owner gets an email when each run's agent finishes or needs a reply. Defaults to `true`."
+          },
+          "nextRunAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the next scheduled run starts. `null` while paused."
+          },
+          "pausedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When it was paused. `null` while scheduled runs are on."
+          },
+          "pausedReason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "`user` when a person paused it. Otherwise Sinatra paused it because a scheduled run was refused, such as when the owner left the workspace or billing stopped the start, and this says why. `null` while scheduled runs are on."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "ownerUserId",
+          "name",
+          "prompt",
+          "cadence",
+          "timezone",
+          "notifyByEmail",
+          "nextRunAt",
+          "pausedAt",
+          "pausedReason",
+          "createdAt",
+          "updatedAt"
+        ],
+        "description": "A recurring task: a prompt that starts a task on a schedule, as the member who created it, until someone pauses or deletes it."
+      },
+      "RecurringTaskDetail": {
+        "type": "object",
+        "properties": {
+          "task": {
+            "$ref": "#/components/schemas/RecurringTask"
+          },
+          "runs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The run's id."
+                },
+                "workspaceId": {
+                  "type": "string",
+                  "description": "The workspace's id."
+                },
+                "recurringTaskId": {
+                  "type": "string",
+                  "description": "The recurring task's id."
+                },
+                "scheduledFor": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "The scheduled time this run is for. For a run started by hand, when it was asked for."
+                },
+                "trigger": {
+                  "type": "string",
+                  "description": "`schedule` for a scheduled run, `manual` for one started by hand. Other values can appear."
+                },
+                "ownerUserId": {
+                  "type": "string",
+                  "description": "The user id of the owner the run's task starts as."
+                },
+                "message": {
+                  "type": "string",
+                  "description": "The prompt when the run was made."
+                },
+                "taskName": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The recurring task's name when the run was made. `null` on some older runs."
+                },
+                "outcome": {
+                  "type": "string",
+                  "description": "`started` once its task started. `skipped` or `refused` when it didn't, with `reason` saying why. `pending` while a start is still being tried: a scheduled run that met a full queue or an outage is retried every minute until a minute before the next scheduled time, then `refused`. Other values can appear."
+                },
+                "reason": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Why the run didn't start, as a code, such as `previous_run_active` (an earlier run's task is still running or queued), `waiting_for_reply` (an earlier run's task waits for a reply), `paused`, `owner_left`, `capacity_full`, `start_failed`, or a refused start's error code such as `payment_required`. `null` when there's nothing to say. Other codes can appear."
+                },
+                "reasonText": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A sentence saying why the run didn't start, to show a person. `null` when there's none."
+                },
+                "workstreamId": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The task the run made. Use it as `taskId` in the task endpoints. `null` when no task was made."
+                },
+                "notifiedAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "When the owner was emailed that the run's agent finished or needed a reply. `null` until then, and when email is off."
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "startedAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "When the run's task was created. `null` when no task was made."
+                }
+              },
+              "required": [
+                "id",
+                "workspaceId",
+                "recurringTaskId",
+                "scheduledFor",
+                "trigger",
+                "ownerUserId",
+                "message",
+                "taskName",
+                "outcome",
+                "reason",
+                "reasonText",
+                "workstreamId",
+                "notifiedAt",
+                "createdAt",
+                "startedAt"
+              ]
+            },
+            "description": "Up to 50 runs, newest first."
+          },
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Pass it as `before` to read older runs. `null` when there are no more."
+          }
+        },
+        "required": [
+          "task",
+          "runs",
+          "next"
+        ]
+      },
+      "RecurringTaskList": {
+        "type": "object",
+        "properties": {
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The recurring task's id. Use it as `taskId` in the recurring task endpoints."
+                },
+                "workspaceId": {
+                  "type": "string",
+                  "description": "The workspace's id."
+                },
+                "ownerUserId": {
+                  "type": "string",
+                  "description": "The user id of the member who created it. Only they can edit, resume or run it, and every run starts a task as them."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Its name, which each run's task title shows."
+                },
+                "prompt": {
+                  "type": "string",
+                  "description": "What each run asks."
+                },
+                "cadence": {
+                  "type": "object",
+                  "properties": {
+                    "times": {
+                      "minItems": 1,
+                      "maxItems": 4,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                      }
+                    },
+                    "weekdays": {
+                      "minItems": 1,
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 6
+                      }
+                    },
+                    "dayOfMonth": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 28
+                    }
+                  },
+                  "required": [
+                    "times"
+                  ],
+                  "description": "When runs start. `times` holds 1 to 4 different 24-hour `HH:MM` times, local to `timezone`. Send exactly one of `weekdays`, days of the week from 0 (Sunday) to 6 (Saturday), or `dayOfMonth`, a day from 1 to 28. Every weekday at 9:00 is `{ \"times\": [\"09:00\"], \"weekdays\": [1, 2, 3, 4, 5] }`; the first of each month is `{ \"times\": [\"09:00\"], \"dayOfMonth\": 1 }`."
+                },
+                "timezone": {
+                  "type": "string",
+                  "description": "The IANA time zone the `cadence` times are local to."
+                },
+                "notifyByEmail": {
+                  "type": "boolean",
+                  "description": "Whether the owner gets an email when each run's agent finishes or needs a reply. Defaults to `true`."
+                },
+                "nextRunAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "When the next scheduled run starts. `null` while paused."
+                },
+                "pausedAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "When it was paused. `null` while scheduled runs are on."
+                },
+                "pausedReason": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "`user` when a person paused it. Otherwise Sinatra paused it because a scheduled run was refused, such as when the owner left the workspace or billing stopped the start, and this says why. `null` while scheduled runs are on."
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "owner": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "githubLogin": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "githubLogin"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The owner's user id, name and GitHub login. `null` when they are no longer a member."
+                },
+                "lastRun": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/RecurringTaskRun"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The most recent run. `null` before the first."
+                }
+              },
+              "required": [
+                "id",
+                "workspaceId",
+                "ownerUserId",
+                "name",
+                "prompt",
+                "cadence",
+                "timezone",
+                "notifyByEmail",
+                "nextRunAt",
+                "pausedAt",
+                "pausedReason",
+                "createdAt",
+                "updatedAt",
+                "owner",
+                "lastRun"
+              ]
+            },
+            "description": "The workspace's recurring tasks, newest first."
+          }
+        },
+        "required": [
+          "tasks"
+        ]
+      },
+      "RecurringTaskRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "A short name, up to 200 characters. Defaults to the prompt's first line, cut to 200 characters."
+          },
+          "prompt": {
+            "type": "string",
+            "description": "What each run asks, as you'd ask a teammate. Each run starts a task whose first message is this prompt under two lines naming the recurring task and the run's time; that message must fit in 100,000 characters."
+          },
+          "cadence": {
+            "type": "object",
+            "properties": {
+              "times": {
+                "minItems": 1,
+                "maxItems": 4,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                }
+              },
+              "weekdays": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6
+                }
+              },
+              "dayOfMonth": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 28
+              }
+            },
+            "required": [
+              "times"
+            ],
+            "additionalProperties": false,
+            "description": "When runs start. `times` holds 1 to 4 different 24-hour `HH:MM` times, local to `timezone`. Send exactly one of `weekdays`, days of the week from 0 (Sunday) to 6 (Saturday), or `dayOfMonth`, a day from 1 to 28. Every weekday at 9:00 is `{ \"times\": [\"09:00\"], \"weekdays\": [1, 2, 3, 4, 5] }`; the first of each month is `{ \"times\": [\"09:00\"], \"dayOfMonth\": 1 }`."
+          },
+          "timezone": {
+            "type": "string",
+            "description": "An IANA time zone, such as `America/Chicago`. The `cadence` times are local to it."
+          },
+          "notifyByEmail": {
+            "type": "boolean",
+            "description": "Whether the owner gets an email when each run's agent finishes or needs a reply. Defaults to `true`."
+          }
+        },
+        "additionalProperties": false,
+        "description": "Changes to a recurring task. Fields you leave out stay as they are."
+      },
+      "RecurringTaskResponse": {
+        "type": "object",
+        "properties": {
+          "task": {
+            "$ref": "#/components/schemas/RecurringTask"
+          }
+        },
+        "required": [
+          "task"
+        ]
+      },
+      "RecurringTaskRun": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The run's id."
+          },
+          "workspaceId": {
+            "type": "string",
+            "description": "The workspace's id."
+          },
+          "recurringTaskId": {
+            "type": "string",
+            "description": "The recurring task's id."
+          },
+          "scheduledFor": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The scheduled time this run is for. For a run started by hand, when it was asked for."
+          },
+          "trigger": {
+            "type": "string",
+            "description": "`schedule` for a scheduled run, `manual` for one started by hand. Other values can appear."
+          },
+          "ownerUserId": {
+            "type": "string",
+            "description": "The user id of the owner the run's task starts as."
+          },
+          "message": {
+            "type": "string",
+            "description": "The prompt when the run was made."
+          },
+          "taskName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The recurring task's name when the run was made. `null` on some older runs."
+          },
+          "outcome": {
+            "type": "string",
+            "description": "`started` once its task started. `skipped` or `refused` when it didn't, with `reason` saying why. `pending` while a start is still being tried: a scheduled run that met a full queue or an outage is retried every minute until a minute before the next scheduled time, then `refused`. Other values can appear."
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the run didn't start, as a code, such as `previous_run_active` (an earlier run's task is still running or queued), `waiting_for_reply` (an earlier run's task waits for a reply), `paused`, `owner_left`, `capacity_full`, `start_failed`, or a refused start's error code such as `payment_required`. `null` when there's nothing to say. Other codes can appear."
+          },
+          "reasonText": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A sentence saying why the run didn't start, to show a person. `null` when there's none."
+          },
+          "workstreamId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The task the run made. Use it as `taskId` in the task endpoints. `null` when no task was made."
+          },
+          "notifiedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the owner was emailed that the run's agent finished or needed a reply. `null` until then, and when email is off."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "recurringTaskId",
+          "scheduledFor",
+          "trigger",
+          "ownerUserId",
+          "message",
+          "taskName",
+          "outcome",
+          "reason",
+          "reasonText",
+          "workstreamId",
+          "notifiedAt",
+          "createdAt"
+        ],
+        "description": "One run of a recurring task: a scheduled time, or a start by hand, and what came of it."
+      },
+      "RecurringTaskRunError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "A machine-readable code, such as `invalid_prompt`. Branch on this, not on `reason`. New codes can appear."
+          },
+          "reason": {
+            "description": "A sentence saying what went wrong and, where it helps, what to do. Written to show to a person.",
+            "type": "string"
+          },
+          "requestId": {
+            "description": "The request's id. Present on some errors, not all; the `x-request-id` response header always carries it. Share it with support.",
+            "type": "string"
+          },
+          "refusal": {
+            "description": "Why a start was refused, on `payment_required` and `github_not_connected`. For `payment_required`: `own_credentials_required` or `subscription_inactive`. For `github_not_connected`: `missing` or `suspended`.",
+            "type": "string"
+          },
+          "billingUrl": {
+            "description": "The settings section that fixes the refusal: your model credentials or billing, on `payment_required`; billing, when starting a task, on `capacity_full`.",
+            "type": "string"
+          },
+          "settingsUrl": {
+            "description": "The settings page that fixes the refusal, on `github_not_connected`.",
+            "type": "string"
+          },
+          "plan": {
+            "description": "The workspace's plan, on `capacity_full` when starting a task.",
+            "type": "string"
+          },
+          "running": {
+            "description": "How many agents the plan runs at a time, on `capacity_full` when starting a task.",
+            "type": "integer"
+          },
+          "queued": {
+            "description": "How many agents the plan lets wait, on `capacity_full` when starting a task.",
+            "type": "integer"
+          },
+          "taskId": {
+            "description": "On `unavailable` after a start: the task that was made. Retry with the same key, or send a message on it.",
+            "type": "string"
+          },
+          "messageId": {
+            "description": "On `unavailable`: the message that was saved but not sent yet. Retry with it as the `Idempotency-Key`.",
+            "type": "string"
+          },
+          "run": {
+            "description": "The run as recorded, with its `outcome` and `reason`, when one was made.",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecurringTaskRun"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "description": "An error from running a recurring task now."
+      },
+      "RecurringTaskStarted": {
+        "type": "object",
+        "properties": {
+          "run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecurringTaskRun"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The run, with `outcome` `started`."
+          },
+          "taskId": {
+            "type": "string",
+            "description": "The task the run started. Use it as `taskId` in the task endpoints."
+          }
+        },
+        "required": [
+          "run",
+          "taskId"
+        ],
+        "description": "The run that started, and its task."
       },
       "RepoCapabilityRequestDismissed": {
         "type": "object",
